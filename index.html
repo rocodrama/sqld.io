@@ -1,0 +1,828 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="SQLD 1·2과목 개념 정리와 4지선다·실전형 문제">
+<title>SQLD 정리</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: home → 과목별 개념 / 문제 / 실전형. One narrow reading column, sticky header with back + context controls. */
+:root{
+  --bg:#F3F5FA; --bg2:#EEF1F7; --card:#FFFFFF; --fg:#121926; --muted:#5A6678; --line:#DCE2EC;
+  --accent:#2F5BEA; --accent-soft:#E7EDFF; --on-accent:#FFFFFF;
+  --use:#0B7F70; --use-soft:#DDF4EF;
+  --tip:#9A6200; --tip-soft:#FFF2D2;
+  --ex:#6D45B8; --ex-soft:#EFE8FB;
+  --ok:#17824F; --ok-soft:#DFF4E8; --bad:#C6352B; --bad-soft:#FBE6E3;
+  --font:"Noto Sans KR",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,SFMono-Regular,Consolas,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0F141B; --bg2:#141B24; --card:#19212B; --fg:#E7ECF2; --muted:#98A4B3; --line:#2B3542;
+  --accent:#86A2FF; --accent-soft:#212C48; --on-accent:#0B1220;
+  --use:#4FD1BD; --use-soft:#14302C; --tip:#F3BC55; --tip-soft:#32291A; --ex:#B99BF2; --ex-soft:#2A2340;
+  --ok:#55C98B; --ok-soft:#163324; --bad:#FF8479; --bad-soft:#3A1F1C; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0F141B; --bg2:#141B24; --card:#19212B; --fg:#E7ECF2; --muted:#98A4B3; --line:#2B3542;
+  --accent:#86A2FF; --accent-soft:#212C48; --on-accent:#0B1220;
+  --use:#4FD1BD; --use-soft:#14302C; --tip:#F3BC55; --tip-soft:#32291A; --ex:#B99BF2; --ex-soft:#2A2340;
+  --ok:#55C98B; --ok-soft:#163324; --bad:#FF8479; --bad-soft:#3A1F1C; color-scheme:dark}
+*{box-sizing:border-box}
+html{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--font);font-size:16px;line-height:1.7;-webkit-text-size-adjust:100%;word-break:keep-all}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--card)}
+.wrap{max-width:660px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+p{margin:0}
+
+/* header */
+header.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:6;background:var(--card);border-bottom:1px solid var(--line)}
+header.bar .wrap{padding-block:10px;display:flex;flex-direction:column;gap:8px}
+.top{display:flex;align-items:center;gap:10px;min-height:38px}
+.back{flex:none;border:0;background:var(--bg2);font-size:14px;font-weight:700;padding:6px 12px;border-radius:9px;min-height:38px}
+h1{font-size:17px;font-weight:700;margin:0;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.score{font-variant-numeric:tabular-nums;font-size:13px;color:var(--muted);white-space:nowrap}
+.score b{color:var(--fg)}
+.prog{height:5px;background:var(--line);border-radius:3px;overflow:hidden}
+.prog i{display:block;height:100%;width:0;background:var(--accent);border-radius:3px;transition:width .3s}
+.chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chips button{flex:none;border:1px solid var(--line);background:var(--card);font-size:13.5px;padding:5px 12px;border-radius:999px;min-height:36px}
+.chips button[aria-pressed="true"]{background:var(--fg);color:var(--card);border-color:var(--fg)}
+.chips.toc button{border-color:transparent;background:var(--accent-soft);color:var(--accent);font-weight:500}
+.chips.toc button.done{background:var(--ok-soft);color:var(--ok)}
+main .wrap{padding-block:18px 72px;display:flex;flex-direction:column;gap:18px}
+
+/* home */
+.hero{padding-top:6px}
+.hero h2{font-size:28px;font-weight:900;line-height:1.25;margin:0 0 6px;letter-spacing:-.02em;text-wrap:balance}
+.hero h2 em{font-style:normal;color:var(--accent)}
+.hero p{color:var(--muted);font-size:15px}
+.exam{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.exam div{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center}
+.exam b{display:block;font-size:20px;font-weight:900;font-variant-numeric:tabular-nums;line-height:1.3}
+.exam span{font-size:12px;color:var(--muted)}
+.goal{background:var(--accent-soft);border-radius:12px;padding:12px 14px;font-size:14.5px}
+.goal b{color:var(--accent)}
+.subj{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 16px;display:flex;flex-direction:column;gap:14px}
+.subj h3{margin:0;font-size:19px;font-weight:700;line-height:1.35}
+.subj h3 small{display:block;font-size:13px;color:var(--muted);font-weight:500}
+.go{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.go a{display:flex;flex-direction:column;gap:6px;text-decoration:none;color:var(--fg);border:1px solid var(--line);border-radius:12px;padding:14px;background:var(--bg2)}
+.go a b{font-size:17px;display:flex;justify-content:space-between;align-items:center}
+.go a b::after{content:"→";color:var(--muted);font-weight:400}
+.go a span{font-size:13px;color:var(--muted);font-variant-numeric:tabular-nums}
+.go .mini{height:4px;background:var(--line);border-radius:2px;overflow:hidden}
+.go .mini i{display:block;height:100%;background:var(--accent);border-radius:2px}
+.go a.pri{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.go a.pri span,.go a.pri b::after{color:var(--on-accent);opacity:.85}
+.go a.pri .mini{background:color-mix(in srgb,var(--on-accent) 30%,transparent)}
+.go a.pri .mini i{background:var(--on-accent)}
+
+/* notes */
+.part{font-size:13px;font-weight:700;letter-spacing:.08em;color:var(--muted);margin:10px 2px -8px;display:flex;align-items:center;gap:10px}
+.part::after{content:"";flex:1;height:1px;background:var(--line)}
+.topic{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px 16px;scroll-margin-top:128px;display:flex;flex-direction:column;gap:18px}
+.topic>header{display:flex;gap:12px;align-items:flex-start}
+.topic .no{flex:none;font-family:var(--mono);font-weight:600;font-size:14px;color:var(--accent);background:var(--accent-soft);border-radius:8px;padding:3px 8px;margin-top:3px}
+.topic h2{font-size:21px;font-weight:700;line-height:1.35;margin:0;letter-spacing:-.01em;text-wrap:balance;flex:1;min-width:0}
+.badge{flex:none;font-size:12px;font-weight:700;border-radius:999px;padding:2px 9px;margin-top:5px;background:var(--bg2);color:var(--muted);white-space:nowrap}
+.badge.new{background:var(--accent);color:var(--on-accent)}
+.blk{display:flex;flex-direction:column;gap:8px;min-width:0}
+.lbl{align-self:flex-start;font-size:12.5px;font-weight:700;border-radius:6px;padding:1px 9px;background:var(--accent-soft);color:var(--accent)}
+.blk.u .lbl{background:var(--use-soft);color:var(--use)}
+.blk.t .lbl{background:var(--tip);color:var(--card)}
+.blk.e .lbl{background:var(--ex-soft);color:var(--ex)}
+.blk ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.blk li::marker{color:var(--muted)}
+.blk.c b,.blk.u b{font-weight:700}
+.blk.t{background:var(--tip-soft);border-radius:12px;padding:14px}
+.blk.e{background:var(--bg2);border-radius:12px;padding:14px}
+.memo{align-self:flex-start;font-weight:900;font-size:18px;letter-spacing:.02em;color:var(--tip)}
+.trap{color:var(--bad);font-weight:700;margin-right:2px}
+code{font-family:var(--mono);font-size:.88em;background:var(--accent-soft);padding:1px 5px;border-radius:4px;word-break:break-word}
+pre{font-family:var(--mono);font-size:13px;line-height:1.6;margin:0;overflow-x:auto;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px;-webkit-overflow-scrolling:touch}
+pre .kw{color:var(--accent);font-weight:600}
+pre .cm{color:var(--muted)}
+.tbl{overflow-x:auto;min-width:0}
+.tbl table{border-collapse:collapse;font-size:14px;width:100%}
+.tbl th,.tbl td{border-bottom:1px solid var(--line);padding:6px 9px;text-align:left;white-space:nowrap}
+.tbl th{color:var(--muted);font-weight:500;font-size:13px}
+table.data{background:var(--card);border-radius:8px;font-variant-numeric:tabular-nums}
+table.data caption{text-align:left;font-weight:700;font-size:13px;padding:0 0 4px;caption-side:top}
+.nl{color:var(--muted);font-style:italic}
+.tfoot{display:flex;gap:8px;flex-wrap:wrap}
+.tfoot button{flex:1;min-width:130px;min-height:46px;border-radius:11px;border:1px solid var(--line);background:var(--card);font-size:14.5px;font-weight:700;padding:8px 12px}
+.tfoot .toq{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
+.tfoot .chk[aria-pressed="true"]{background:var(--ok-soft);border-color:transparent;color:var(--ok)}
+.next{display:block;text-align:center;text-decoration:none;background:var(--accent);color:var(--on-accent);font-weight:700;padding:15px;border-radius:13px}
+
+/* figures */
+.viz{background:var(--bg2);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+figure{margin:0;display:flex;flex-direction:column;gap:6px}
+figcaption,.vcap{font-size:13.5px;color:var(--muted);line-height:1.55}
+figcaption b,.vcap b{color:var(--fg)}
+svg.dg{width:100%;max-width:440px;height:auto;display:block;margin:0 auto}
+.dg .bx{fill:var(--card);stroke:var(--fg);stroke-width:1.5}
+.dg .ln{stroke:var(--fg);stroke-width:1.5;fill:none}
+.dg .tx{fill:var(--fg);font-size:11px}
+.dg .tx.b{font-size:13px;font-weight:700}
+.venns{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media (max-width:480px){.venns{grid-template-columns:repeat(2,1fr)}}
+.venns figure{align-items:center;text-align:center;gap:2px}
+.venns svg{width:100%;max-width:120px;height:auto}
+.von{fill:var(--accent)} .vbg{fill:var(--bg2)} .vln{fill:none;stroke:var(--fg);stroke-width:1.5}
+.venns figcaption b{display:block;font-size:13px}
+.venns figcaption span{font-size:12px}
+.ladder{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:9px}
+.ladder li{display:flex;gap:10px;align-items:flex-start}
+.ladder li>b{flex:none;width:30px;height:30px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;font-size:15px}
+.ladder div{font-size:15px;line-height:1.45;padding-top:3px}
+.ladder strong{margin-right:6px}
+.ladder span{display:block;font-size:13px;color:var(--muted)}
+.quad{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.quad>div{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px;display:grid;grid-template-columns:auto 1fr;column-gap:10px;align-items:center;min-width:0}
+.quad b{grid-row:span 2;width:34px;height:34px;border-radius:8px;background:var(--accent-soft);color:var(--accent);display:grid;place-items:center;font-size:17px}
+.quad strong{font-size:15px;line-height:1.3}
+.quad span{font-size:12.5px;color:var(--muted);line-height:1.35}
+.flow{display:flex;align-items:stretch;gap:5px}
+.flow>div{flex:1;min-width:0;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 6px;text-align:center}
+.flow b{display:block;font-size:14.5px;line-height:1.35}
+.flow span{font-size:12px;color:var(--muted);line-height:1.35;display:block}
+.flow>i{align-self:center;font-style:normal;color:var(--muted)}
+.stack{display:flex;flex-direction:column;gap:4px}
+.lay{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-weight:700;display:flex;justify-content:space-between;gap:8px;align-items:baseline;flex-wrap:wrap}
+.lay span{font-weight:400;font-size:13px;color:var(--muted)}
+.btw{text-align:center;font-size:13px;color:var(--accent);font-weight:700}
+.erd{display:flex;align-items:center;padding-top:4px}
+.ent{flex:none;width:37%;background:var(--card);border:1.5px solid var(--fg);border-radius:8px;padding:8px;font-size:12.5px;line-height:1.4;display:flex;flex-direction:column;gap:2px}
+.ent b{font-size:14px;border-bottom:1px solid var(--line);padding-bottom:3px;margin-bottom:2px}
+.ent i{font-style:normal;color:var(--muted)}
+.ent i.k{color:var(--accent);font-weight:700}
+.rel{flex:1;border-top:2px solid var(--fg);position:relative;min-width:40px}
+.rel.dash{border-top-style:dashed}
+.rel span{position:absolute;left:2px;right:2px;bottom:6px;text-align:center;font-size:11.5px;line-height:1.25;font-weight:700}
+.ruler{display:flex;gap:4px}
+.ruler>div{flex:1;min-width:0;text-align:center;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 0}
+.ruler b{display:block;font-family:var(--mono);font-size:14px;font-weight:600}
+.ruler i{display:block;font-style:normal;font-size:11px;color:var(--muted);min-height:16px;font-variant-numeric:tabular-nums}
+.ruler .on{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.ruler .on i{color:inherit;opacity:.85}
+.ruler .off{opacity:.4}
+.units{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.units div{background:var(--card);border:1px solid var(--line);border-radius:10px;text-align:center;padding:10px 4px}
+.units b{display:block;font-family:var(--mono);font-size:15px;color:var(--accent)}
+.units span{font-size:13px;color:var(--muted)}
+.exec{display:flex;flex-direction:column;gap:4px}
+.exec>div{display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+.exec code{background:none;padding:0;font-weight:600;font-size:13.5px}
+.exec b{flex:none;width:26px;height:26px;border-radius:50%;background:var(--accent);color:var(--on-accent);display:grid;place-items:center;font-size:14px}
+.exec.tag b{width:auto;height:auto;border-radius:6px;padding:2px 9px;font-size:13px;background:var(--accent-soft);color:var(--accent)}
+.frames{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.frames>div{display:flex;flex-direction:column;gap:3px;min-width:0}
+.frames em{font-style:normal;font-weight:700;font-size:13px;text-align:center}
+.frames span{font-family:var(--mono);font-size:12px;padding:5px 7px;border-radius:6px;background:var(--card);border:1px solid var(--line);color:var(--muted)}
+.frames .on{background:var(--accent-soft);border-color:var(--accent);color:var(--fg)}
+.frames .cur{font-weight:600}
+.mx th,.mx td{text-align:center}
+.mx td:first-child,.mx th:first-child{text-align:left}
+.mx .y{color:var(--accent);font-weight:700}
+.tree{display:flex;flex-direction:column;gap:4px}
+.tree>div{display:flex;gap:8px;align-items:baseline;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:6px 10px}
+.tree .l2{margin-left:22px} .tree .l3{margin-left:44px}
+.tree b{font-family:var(--mono);font-size:14px}
+.tree i{font-style:normal;font-size:12.5px;color:var(--muted)}
+.pv{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.pv .tbl{flex:1;min-width:130px}
+.pv .ar{display:flex;flex-direction:column;font-size:12px;color:var(--accent);font-weight:700;white-space:nowrap}
+.tl{list-style:none;margin:0 0 0 5px;padding:0 0 0 16px;border-left:2px solid var(--line);display:flex;flex-direction:column;gap:9px}
+.tl li{position:relative;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.tl li::before{content:"";position:absolute;left:-22px;top:9px;width:10px;height:10px;border-radius:50%;background:var(--muted)}
+.tl .sp::before{background:var(--tip)} .tl .ok::before{background:var(--ok)} .tl .x::before{background:var(--bad)}
+.tl .x code{text-decoration:line-through;opacity:.6}
+.tl i{font-style:normal;font-size:12.5px;color:var(--muted)}
+.sst{display:flex;flex-direction:column;gap:6px}
+.sst>div{display:flex;gap:6px;align-items:center}
+.sst em{flex:none;width:84px;font-style:normal;font-size:13px;font-weight:700}
+.sst span{flex:1;min-width:0;text-align:center;background:var(--card);border:1.5px solid var(--fg);border-radius:6px;padding:6px 4px;font-size:12.5px;line-height:1.35}
+.legend{display:flex;gap:8px;flex-wrap:wrap;font-size:12.5px}
+.legend span{padding:2px 8px;border-radius:6px}
+.lc{background:var(--accent-soft)} .lr{background:var(--tip-soft)} .lx{outline:2px solid var(--bad);outline-offset:-2px}
+.anno .hc{background:var(--accent-soft)}
+.anno .hr td{background:var(--tip-soft)}
+.anno td.hx{outline:2px solid var(--bad);outline-offset:-2px}
+
+/* quiz */
+.grp{font-size:14px;font-weight:700;color:var(--muted);margin:10px 2px -8px;scroll-margin-top:150px}
+.q{border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px;background:var(--card)}
+.meta{display:flex;gap:8px;align-items:center;font-size:13px}
+.num{font-family:var(--mono);font-weight:600;color:var(--accent)}
+.tag{background:var(--bg2);color:var(--muted);padding:1px 8px;border-radius:5px;font-size:12px}
+.stem{font-weight:700;font-size:16px;line-height:1.6}
+.opts{display:flex;flex-direction:column;gap:8px}
+.opt{display:flex;gap:10px;align-items:flex-start;text-align:left;width:100%;min-height:50px;padding:12px;border:1px solid var(--line);border-radius:11px;background:var(--card);font-size:15px;line-height:1.55}
+.opt .mk{flex:none;font-size:17px;line-height:1.4;color:var(--muted)}
+.opt[disabled]{cursor:default}
+.opt.right{border-color:var(--ok);background:var(--ok-soft)} .opt.right .mk{color:var(--ok)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-soft)} .opt.wrong .mk{color:var(--bad)}
+.exp{font-size:14.5px;line-height:1.65;background:var(--bg2);border-radius:10px;padding:11px 13px}
+.exp .o{color:var(--ok)} .exp .x{color:var(--bad)}
+.retry{align-self:flex-start;background:none;border:0;color:var(--muted);font-size:13px;text-decoration:underline;padding:4px 0}
+.empty{text-align:center;color:var(--muted);padding:32px 0}
+.reset{align-self:center;border:1px solid var(--line);background:var(--card);color:var(--muted);font-size:14px;padding:10px 18px;border-radius:999px;min-height:44px}
+.reset.arm{color:var(--bad);border-color:var(--bad)}
+.given{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:12px}
+.given>p{font-size:14px;color:var(--muted)}
+.fab{position:fixed;z-index:8;right:max(16px,env(safe-area-inset-right,0px));bottom:calc(16px + env(safe-area-inset-bottom,0px));border:0;background:var(--fg);color:var(--card);font-weight:700;font-size:14px;padding:12px 16px;border-radius:999px;min-height:46px;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+.sheet{position:fixed;z-index:7;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);box-shadow:0 -10px 30px rgba(0,0,0,.2);max-height:64vh;overflow:auto;padding:16px max(16px,env(safe-area-inset-right,0px)) calc(78px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:12px}
+@media (prefers-reduced-motion:reduce){.prog i{transition:none}}
+</style>
+</head>
+<body>
+<header class="bar"><div class="wrap">
+  <div class="top"><button class="back" id="back" type="button" hidden>‹ 홈</button><h1 id="ttl">SQLD 정리</h1><span class="score" id="score"></span></div>
+  <div class="prog" id="barw" hidden><i id="prog"></i></div>
+  <div class="chips" id="filt" hidden role="group" aria-label="문제 필터">
+    <button type="button" data-f="all" aria-pressed="true">전체</button>
+    <button type="button" data-f="todo" aria-pressed="false">안 푼 문제</button>
+    <button type="button" data-f="wrong" aria-pressed="false">틀린 문제</button>
+  </div>
+  <nav class="chips toc" id="toc" hidden aria-label="주제 바로가기"></nav>
+</div></header>
+<main><div class="wrap" id="view"></div></main>
+<div class="sheet" id="sheet" hidden></div>
+<button class="fab" id="fab" type="button" hidden>EMP · DEPT 표 보기</button>
+
+<script>
+/* ===================== 1과목 ===================== */
+const T1=[
+{id:"t1",name:"정규화",pct:"21.0%",
+ c:"<p>한 테이블에 섞여 있는 서로 다른 정보를 <b>함수 종속성</b> 기준으로 쪼개서, 중복과 <b>이상현상</b>(삽입·삭제·갱신 이상)을 없애는 과정. 논리적 모델링 단계에서 한다.</p>",
+ u:"<ul><li>한 칸에 값이 여러 개 / 전화번호1·2·3 같은 반복 컬럼 → <b>1NF 위반</b></li><li>PK가 복합키인데, 어떤 속성이 PK <b>일부</b>에만 종속 → <b>2NF 위반</b></li><li>PK 아닌 일반 속성이 다른 일반 속성을 결정 (A→B→C) → <b>3NF 위반</b></li><li>결정자인데 후보키가 아님 → <b>BCNF 위반</b></li></ul>",
+ tip:"<span class='memo'>도부이결다조</span><p>도메인 원자성(1) · 부분(2) · 이행(3) · 결정자(BCNF) · 다치(4) · 조인(5)</p><p><span class='trap'>함정</span> \"정규화하면 조회 성능이 항상 향상\" → 틀림. 조인이 늘어 조회는 느려질 수 있다. 입력·수정·삭제 성능은 대체로 좋아진다.</p>",
+ ex:"<p><b>2NF 위반</b> 주문상품(<u>주문번호, 상품번호</u>, 상품명, 수량)<br>상품명은 상품번호에만 종속 = 부분 종속<br>→ 상품(<u>상품번호</u>, 상품명) 분리</p><p><b>3NF 위반</b> 사원(<u>사번</u>, 부서코드, 부서명)<br>사번 → 부서코드 → 부서명 = 이행 종속<br>→ 부서(<u>부서코드</u>, 부서명) 분리</p>"},
+{id:"t2",name:"관계 차수와 선택성",pct:"12.6%",
+ c:"<p><b>차수</b>: 한 인스턴스에 상대 인스턴스가 몇 개 연결되는지 (1:1, 1:N, M:N).<br><b>선택성</b>: 관계 참여가 필수인지 선택인지.<br>관계 구성 요소 = 관계명 · 차수 · 선택성.</p>",
+ u:"<ul><li>문장을 <b>양방향</b>으로 읽는다: \"각 A는 B를 <b>항상/때때로</b> <b>하나/여러 개</b> 가진다\"</li><li>항상 = 필수, 때때로 = 선택, 하나 = 1, 여러 개 = N</li></ul>",
+ tip:"<p>IE 표기: <b>|</b> 필수, <b>○</b> 선택, 까마귀발 = 여럿(N)</p><p>관계 종류: <b>존재 관계</b>(부서–사원, 소속) / <b>행위 관계</b>(고객–주문, 행동)</p><p>M:N은 논리 모델에서 교차(관계) 엔터티로 풀어낸다.</p>",
+ ex:"<p>각 고객은 주문을 <b>때때로 여러 개</b> 가진다 → 선택, N<br>각 주문은 고객을 <b>항상 하나</b> 가진다 → 필수, 1<br>⇒ 고객 : 주문 = 1 : N</p>"},
+{id:"t3",name:"엔터티 분류",pct:"11.8%",
+ c:"<p>엔터티 = 업무에서 관리해야 하는 정보의 <b>집합</b>. 두 가지 기준으로 나눈다: <b>유무형</b>, <b>발생 시점</b>.</p>",
+ u:"<ul><li>눈에 보이나? → 유형 / 개념이나 규칙인가? → 개념 / 업무 중 일어난 일인가? → 사건</li><li>스스로 생기나? → 기본(키) / 기본 엔터티끼리 업무로 생기나? → 중심 / 그 업무가 진행되며 계속 쌓이나? → 행위</li></ul>",
+ tip:"<p>엔터티 조건: 업무에 필요 · 유일 식별자 · 인스턴스 <b>2개 이상</b> · 속성 보유 · 관계 1개 이상 (통계·코드성 엔터티는 관계 생략 가능)</p><p>명명: 현업 용어 · <b>약어 지양</b> · 단수 명사 · 이름 유일</p>",
+ ex:"<div class='tbl'><table><tr><th>기준</th><th>분류</th><th>예</th></tr><tr><td rowspan='3'>유무형</td><td>유형</td><td>사원, 물품</td></tr><tr><td>개념</td><td>조직, 보험상품</td></tr><tr><td>사건</td><td>주문, 청구, 매출</td></tr><tr><td rowspan='3'>발생 시점</td><td>기본(키)</td><td>사원, 고객, 상품</td></tr><tr><td>중심</td><td>주문, 계약, 매출</td></tr><tr><td>행위</td><td>주문목록, 변경이력</td></tr></table></div>"},
+{id:"t4",name:"식별 / 비식별 관계",pct:"11.0%",
+ c:"<p><b>식별</b>: 부모 PK가 자식 <b>PK의 일부</b>가 된다. IE 표기 <b>실선</b>.<br><b>비식별</b>: 부모 PK가 자식의 <b>일반 속성(FK)</b>이 된다. IE 표기 <b>점선</b>.</p>",
+ u:"<ul><li>자식이 부모 없이 못 생기고, 부모 키가 있어야 자식을 구분할 수 있다 → 식별</li><li>부모 없이도 자식이 생기거나, 생명주기가 다르거나, 자식이 자기 키로 충분히 구분된다 → 비식별</li></ul>",
+ tip:"<p>식별 관계만 계속 이어지면 자식 PK가 길어져 SQL 조인 조건이 복잡해진다 → 적당히 비식별로 끊는다.</p><p>반대로 비식별만 쓰면 부모 정보를 얻으러 조인이 많아진다.</p>",
+ ex:"<p>주문(<u>주문번호</u>) → 주문상품(<u>주문번호, 순번</u>) : <b>식별</b> (실선)</p><p>부서(<u>부서코드</u>) → 사원(<u>사번</u>, 부서코드FK) : <b>비식별</b> (점선)</p>"},
+{id:"t5",name:"주식별자 4가지 특징",pct:"10.2%",
+ c:"<p>인스턴스를 유일하게 구분하는 대표 식별자. 아래 네 조건을 모두 만족해야 한다.</p><ul><li><b>유일성</b>: 모든 인스턴스를 유일하게 구분</li><li><b>최소성</b>: 유일성을 만족하는 최소한의 속성 수</li><li><b>불변성</b>: 값이 자주 바뀌지 않음</li><li><b>존재성</b>: 반드시 값이 있음 (NOT NULL)</li></ul>",
+ u:"<p>후보 속성을 네 조건에 하나씩 대보며 탈락시킨다.</p>",
+ tip:"<span class='memo'>유최불존</span><p><span class='trap'>함정</span> \"최소성 = 반드시 단일 속성\" → 틀림. 복합 식별자도 최소이면 OK.</p>",
+ ex:"<ul><li>이름 → 동명이인 → <b>유일성</b> X</li><li>휴대폰 번호 → 바뀔 수 있음 → <b>불변성</b> X</li><li>(사번, 이름) → 사번만으로 유일 → <b>최소성</b> X</li><li>사번 → OK</li></ul>"},
+{id:"t6",name:"속성의 분류",pct:"9.4%",
+ c:"<p>속성 = 엔터티를 설명하는, 더 이상 쪼갤 수 없는 최소 단위.</p>",
+ u:"<ul><li><b>특성</b> 기준: 기본(업무 원래 속성) / 설계(코드·일련번호) / 파생(계산값)</li><li><b>구성 방식</b> 기준: PK / FK / 일반 속성</li><li><b>분해 여부</b>: 단일 / 복합(주소 = 시·구·동) / 다중값</li></ul>",
+ tip:"<span class='memo'>기설파</span><p>파생 속성은 정합성 관리가 어려워서 <b>가급적 적게</b> 정의.</p><p>기준이 세 개라 보기에서 섞어 놓는다. 무슨 기준인지부터 확인.</p>",
+ ex:"<p>주문 엔터티<br>· 수량, 단가 → <b>기본</b><br>· 주문번호 → <b>설계</b><br>· 주문금액(= 수량 × 단가) → <b>파생</b></p>"},
+{id:"t7",name:"식별자 분류 · 본질 vs 인조",pct:"7.0%",
+ c:"<p><b>본질 식별자</b>: 업무에서 자연스럽게 도출된 식별자.<br><b>인조 식별자</b>: 식별 편의를 위해 인위적으로 만든 식별자(일련번호 등).</p>",
+ u:"<div class='tbl'><table><tr><th>기준</th><th>분류</th></tr><tr><td>대표성</td><td>주 / 보조</td></tr><tr><td>생성 여부</td><td>내부 / 외부(관계로 상속)</td></tr><tr><td>속성 수</td><td>단일 / 복합</td></tr><tr><td>대체 여부</td><td>본질 / 인조</td></tr></table></div>",
+ tip:"<p>인조 식별자 단점: <b>중복 데이터</b> 발생 가능, <b>불필요한 인덱스</b> 추가.</p><p>생성 여부 = 내부/외부. \"주/외부\"처럼 섞은 보기는 오답.</p>",
+ ex:"<p>주문상세 PK<br>· (주문번호, 상품번호) → 본질 식별자<br>· 주문상세번호(1,2,3…) → 인조 식별자 → 같은 주문에 같은 상품이 두 번 들어가도 막지 못함</p>"},
+{id:"t8",name:"도메인",pct:"6.3%",
+ c:"<p>속성이 가질 수 있는 <b>값의 범위</b>.</p>",
+ u:"<p>속성을 정의할 때 데이터 타입, 길이, 허용 값, 기본값, 제약조건(CHECK · NOT NULL)을 정한다.</p>",
+ tip:"<p>\"관계 차수\", \"인스턴스 개수\"는 도메인이 아니다. 보기에 섞여 나온다.</p>",
+ ex:"<p>성별: <code>CHAR(1)</code>, 'M' 또는 'F'만 허용<br>나이: <code>NUMBER(3)</code>, 0 이상</p>"},
+{id:"t9",name:"3단계 스키마",pct:"5.5%",
+ c:"<p>ANSI/SPARC 3단계 구조. 목적은 <b>데이터 독립성</b>.</p><ul><li><b>외부</b>: 개별 사용자 관점</li><li><b>개념</b>: 모든 사용자 관점을 통합한 조직 전체 구조</li><li><b>내부</b>: 물리적 저장 구조</li></ul>",
+ u:"<p>문제의 관점 단어로 고른다: \"사용자/응용\" → 외부, \"통합/전체\" → 개념, \"물리/저장\" → 내부</p>",
+ tip:"<span class='memo'>외개내</span><p>외부↔개념 = <b>논리적</b> 독립성, 개념↔내부 = <b>물리적</b> 독립성</p>",
+ ex:"<p>수강신청 앱 화면에 보이는 데이터 → 외부<br>학사 DB 전체 테이블과 관계 → 개념<br>인덱스, 파일 저장 위치 → 내부</p>"},
+{id:"t10",name:"엔터티·인스턴스·속성·속성값",pct:"4.7%",
+ c:"<p>엑셀 표로 생각한다: 엔터티 = <b>표</b>, 인스턴스 = <b>행</b>, 속성 = <b>열</b>, 속성값 = <b>칸</b>.</p>",
+ u:"<p>보기에 나온 단어를 표의 어느 부분인지로 바꿔서 맞춘다.</p>",
+ tip:"<p>한 인스턴스의 한 속성은 <b>하나의</b> 속성값만 가진다. 여러 값이면 1NF 위반.</p>",
+ ex:"<pre>사원 (엔터티)\n사번 | 이름   | 부서    ← 속성\n1001 | 홍길동 | 영업    ← 인스턴스\n            ↑ 속성값</pre>"},
+{id:"t11",name:"모델링 기본",isNew:1,
+ c:"<p>현실 세계를 데이터베이스로 옮기기 위해 단순하게 표현하는 과정.</p>",
+ u:"<ul><li>특징: <b>추상화 · 단순화 · 명확화</b></li><li>단계: 개념(핵심 엔터티·관계) → 논리(키·속성, <b>정규화</b>) → 물리(테이블·인덱스)</li><li>관점: 데이터(What) · 프로세스(How) · 상관</li></ul>",
+ tip:"<p>\"구체화\"는 특징이 아니다. \"사용자 관점\"은 모델링 관점이 아니다 (스키마랑 헷갈리게 냄).</p>",
+ ex:"<p>쇼핑몰: 고객·주문·상품 도출(개념) → 주문상품 PK·정규화(논리) → ORDERS 테이블, 인덱스 생성(물리)</p>"},
+{id:"t12",name:"반정규화",isNew:1,
+ c:"<p>조회 성능을 위해 정규화된 모델에 <b>의도적으로 중복</b>을 허용하는 것. 대가로 <b>무결성 저하</b> 위험.</p>",
+ u:"<p>순서: 대상 조사 → <b>다른 방법 먼저 검토</b>(뷰 · 클러스터링 · 인덱스 조정 · 응용 로직) → 그래도 안 되면 반정규화</p><p>기법: 테이블 병합·분할, 중복 테이블, 중복 컬럼·파생 컬럼 추가</p>",
+ tip:"<p><span class='trap'>함정</span> \"반정규화하면 무결성 향상\" → 틀림.<br>\"반정규화 전 대안\" 보기에 컬럼 중복이 있으면 그게 오답 (그 자체가 반정규화).</p>",
+ ex:"<p>주문 목록마다 고객명을 보려고 매번 고객 테이블과 조인 → 주문 테이블에 고객명 컬럼 중복 추가</p>"},
+{id:"t13",name:"슈퍼/서브타입 변환",isNew:1,
+ c:"<p>공통 속성은 <b>슈퍼타입</b>, 일부만 가진 속성은 <b>서브타입</b>으로 모델링한 뒤, 물리 테이블로 바꾸는 방법.</p>",
+ u:"<ul><li><b>One to One</b>: 슈퍼·서브 각각 개별 테이블 (개별 처리가 많을 때)</li><li><b>Plus</b>: 서브타입마다 슈퍼 속성을 합친 테이블</li><li><b>Single (All in One)</b>: 전부 하나로 통합 (통합 처리가 많을 때)</li></ul>",
+ tip:"<p>변환 기준은 <b>트랜잭션 처리 패턴</b>. 데이터 양만 보고 고르지 않는다.</p>",
+ ex:"<p>고객(공통) / 개인고객(주민번호) / 법인고객(사업자번호)<br>· One to One → 고객, 개인고객, 법인고객 3개<br>· Plus → 개인고객(공통+개인), 법인고객(공통+법인) 2개<br>· Single → 고객 1개</p>"},
+{id:"t14",name:"NULL",isNew:1,
+ c:"<p>값이 없거나 모르는 상태. 공백(' ')이나 0과 다르다.</p>",
+ u:"<ul><li>연산: <code>NULL + 1</code> → NULL</li><li>비교: <code>IS NULL</code> / <code>IS NOT NULL</code></li><li>집계 함수는 NULL을 빼고 계산 (COUNT(*)만 예외)</li></ul>",
+ tip:"<p><span class='trap'>함정</span> <code>WHERE COL = NULL</code> → 결과 0건.<br>AVG는 NULL 행을 분모에서도 뺀다.</p>",
+ ex:"<pre>COL: 10, NULL, 20\nCOUNT(*)   = 3\nCOUNT(COL) = 2\nSUM(COL)   = 30\nAVG(COL)   = 15   ← 30/2</pre>"},
+{id:"t15",name:"트랜잭션 ACID",isNew:1,
+ c:"<p>트랜잭션 = 더 이상 쪼갤 수 없는 업무 처리 단위.</p><ul><li><b>원자성</b>: 전부 수행 or 전혀 안 함</li><li><b>일관성</b>: 실행 전후 DB가 일관된 상태</li><li><b>고립성</b>: 다른 트랜잭션이 중간 결과에 끼어들지 못함</li><li><b>지속성</b>: 커밋한 결과는 영구 반영</li></ul>",
+ u:"<p>상황 문장을 보고 어떤 성질이 깨졌는지 고른다.</p>",
+ tip:"<p>\"영구\" → 지속성, \"끼어들기·간섭\" → 고립성. 이 둘을 바꿔 놓은 보기가 자주 나온다.</p>",
+ ex:"<p>계좌이체: 출금만 되고 입금 전에 장애 → 둘 다 취소(ROLLBACK)되어야 함 = <b>원자성</b></p>"}
+];
+const Q1=[
+{t:"t1",s:"정규화에 대한 설명으로 가장 적절하지 않은 것은?",o:["데이터 중복을 줄여 이상현상을 방지한다","정규화를 하면 조회(SELECT) 성능은 항상 향상된다","정규화는 주로 논리 데이터 모델링 단계에서 수행한다","정규화를 하면 입력·수정·삭제 성능은 일반적으로 좋아진다"],a:1,e:"조인이 늘어 조회 성능은 떨어질 수 있습니다. '항상'이 붙으면 의심하세요."},
+{t:"t1",s:"제2정규형(2NF)에서 제거하는 것은?",o:["다중값 속성","이행 함수 종속","부분 함수 종속","다치 종속"],a:2,e:"2NF = 부분 함수 종속 제거. 복합키 일부에만 종속된 속성을 분리합니다."},
+{t:"t1",s:"<code>A → B</code>, <code>B → C</code>가 성립해서 생기는 <code>A → C</code> 종속을 제거하는 정규형은?",o:["제1정규형","제2정규형","제3정규형","제4정규형"],a:2,e:"건너서 종속 = 이행 함수 종속 → 3NF."},
+{t:"t1",s:"'전화번호1, 전화번호2, 전화번호3'처럼 같은 성격의 속성이 반복된 테이블이 위반한 정규형은?",o:["제1정규형","제2정규형","제3정규형","BCNF"],a:0,e:"1NF는 원자값을 요구합니다. 반복 속성·다중값은 1NF 위반."},
+{t:"t1",s:"BCNF에 대한 설명으로 가장 적절한 것은?",o:["다치 종속을 제거한다","결정자이면서 후보키가 아닌 것을 제거한다","조인 종속을 제거한다","속성 값을 원자값으로 만든다"],a:1,e:"도부이<b>결</b>다조 — 결정자."},
+{t:"t1",s:"함수 종속 <code>X → Y</code>에서 X를 부르는 이름은?",o:["종속자","결정자","후보자","참조자"],a:1,e:"X가 Y를 결정 → X 결정자, Y 종속자."},
+{t:"t2",s:"IE 표기법에서 관계선 끝의 동그라미(○)가 의미하는 것은?",o:["필수 참여","선택 참여","1:1 관계","식별 관계"],a:1,e:"○ 선택, | 필수, 까마귀발 N."},
+{t:"t2",s:"'고객은 주문을 안 할 수도, 여러 번 할 수도 있다. 주문은 반드시 한 명의 고객이 한다.' 옳은 것은?",o:["1:1, 고객 쪽 필수","1:N, 주문 입장에서 고객은 필수","N:M, 양쪽 선택","1:N, 양쪽 모두 선택"],a:1,e:"고객 1 : 주문 N. 주문은 고객이 항상 있어야 하므로 필수."},
+{t:"t3",s:"발생 시점에 따른 분류에서 '중심 엔터티'의 예로 가장 적절한 것은?",o:["사원","주문","주문목록","상품"],a:1,e:"기본: 사원·상품 / 중심: 주문 / 행위: 주문목록."},
+{t:"t3",s:"유무형에 따른 분류에서 '사건 엔터티'의 예로 적절한 것은?",o:["사원","보험상품","조직","주문"],a:3,e:"유형: 사원 / 개념: 조직·보험상품 / 사건: 주문."},
+{t:"t3",s:"엔터티의 특징으로 적절하지 않은 것은?",o:["업무에서 필요하고 관리하고자 하는 정보여야 한다","유일한 식별자로 식별이 가능해야 한다","반드시 하나의 인스턴스만 가져야 한다","다른 엔터티와 최소 한 개 이상의 관계가 있어야 한다"],a:2,e:"인스턴스는 2개 이상이어야 합니다."},
+{t:"t3",s:"엔터티 명명 규칙으로 적절하지 않은 것은?",o:["현업에서 쓰는 용어를 사용한다","가능하면 약어를 사용한다","단수 명사를 사용한다","모든 엔터티 이름은 유일해야 한다"],a:1,e:"약어는 가급적 피합니다."},
+{t:"t4",s:"식별/비식별 관계에 대한 설명으로 적절하지 않은 것은?",o:["식별 관계는 부모 PK가 자식 PK의 일부가 된다","IE 표기법에서 식별 관계는 실선으로 표현한다","비식별 관계는 부모 PK가 자식 PK로 상속된다","비식별 관계는 점선으로 표현한다"],a:2,e:"비식별 관계에서 부모 PK는 자식의 일반 속성(FK)이 됩니다."},
+{t:"t4",s:"비식별 관계를 선택하는 경우로 적절하지 않은 것은?",o:["자식이 부모 없이도 생성될 수 있을 때","식별 관계로 이어져 자식 PK가 지나치게 길어질 때","부모와 자식의 생명주기가 서로 다를 때","자식이 반드시 부모에 종속되어 함께 생성될 때"],a:3,e:"부모에 강하게 종속되면 식별 관계."},
+{t:"t5",s:"주식별자의 특징으로 적절하지 않은 것은?",o:["유일성: 모든 인스턴스를 유일하게 구분한다","최소성: 반드시 하나의 속성으로만 구성해야 한다","불변성: 한 번 정해지면 자주 바뀌지 않는다","존재성: 반드시 값이 존재해야 한다"],a:1,e:"최소성 = 유일성을 만족하는 최소 속성 수. 복합도 가능."},
+{t:"t5",s:"주식별자 특징 중 'NULL 값을 가질 수 없다'에 해당하는 것은?",o:["유일성","최소성","불변성","존재성"],a:3,e:"존재성 = NOT NULL."},
+{t:"t6",s:"'총주문금액'처럼 다른 속성으로 계산되는 속성은?",o:["기본 속성","설계 속성","파생 속성","복합 속성"],a:2,e:"계산값 = 파생 속성. 가급적 적게."},
+{t:"t6",s:"업무에 원래 없지만 설계 편의로 만든 '상품코드', '일련번호' 같은 속성은?",o:["기본 속성","설계 속성","파생 속성","단일 속성"],a:1,e:"기설파 중 설계 속성."},
+{t:"t7",s:"다른 엔터티와의 관계를 통해 상속받은 식별자는?",o:["내부 식별자","외부 식별자","보조 식별자","본질 식별자"],a:1,e:"관계로 받아오면 외부 식별자."},
+{t:"t7",s:"인조 식별자에 대한 설명으로 적절하지 않은 것은?",o:["식별의 편의를 위해 인위적으로 만든다","업무적으로 의미 있는 속성으로 구성된다","중복 데이터가 발생할 가능성이 있다","불필요한 인덱스가 추가될 수 있다"],a:1,e:"업무 의미가 있으면 본질 식별자."},
+{t:"t7",s:"식별자 분류 기준과 종류의 연결이 틀린 것은?",o:["대표성 – 주식별자 / 보조식별자","속성 수 – 단일식별자 / 복합식별자","대체 여부 – 본질식별자 / 인조식별자","생성 여부 – 주식별자 / 외부식별자"],a:3,e:"생성 여부 = 내부 / 외부."},
+{t:"t8",s:"도메인에 대한 설명으로 가장 적절한 것은?",o:["엔터티 간 관계의 차수","속성이 가질 수 있는 값의 범위","인스턴스의 개수","테이블이 저장되는 물리 공간"],a:1,e:"도메인 = 속성 값의 범위."},
+{t:"t8",s:"속성의 도메인을 정의할 때 정하는 것이 아닌 것은?",o:["데이터 타입","길이","허용 값 범위(CHECK)","다른 엔터티와의 관계 차수"],a:3,e:"관계 차수는 관계의 성질이지 도메인이 아닙니다."},
+{t:"t9",s:"모든 사용자 관점을 통합한 조직 전체의 데이터베이스 구조는?",o:["외부 스키마","개념 스키마","내부 스키마","물리 스키마"],a:1,e:"통합 관점 = 개념 스키마."},
+{t:"t9",s:"외부 스키마와 개념 스키마 사이에서 보장되는 독립성은?",o:["물리적 독립성","논리적 독립성","개념적 독립성","내부적 독립성"],a:1,e:"외부↔개념 논리적, 개념↔내부 물리적."},
+{t:"t10",s:"엔터티·인스턴스·속성·속성값에 대한 설명으로 적절하지 않은 것은?",o:["엔터티는 표, 인스턴스는 행에 비유할 수 있다","속성은 열에 비유할 수 있다","하나의 엔터티는 두 개 이상의 인스턴스를 가진다","한 인스턴스의 한 속성은 여러 개의 속성값을 가질 수 있다"],a:3,e:"한 속성 = 한 속성값."},
+{t:"t10",s:"'사원' 엔터티에서 '1001번 홍길동 영업부' 한 줄의 데이터에 해당하는 것은?",o:["속성","도메인","인스턴스","식별자"],a:2,e:"표의 한 행 = 인스턴스."},
+{t:"t11",s:"데이터 모델링의 특징이 아닌 것은?",o:["추상화","단순화","명확화","구체화"],a:3,e:"추상화 · 단순화 · 명확화."},
+{t:"t11",s:"데이터 모델링 단계 중 정규화를 수행하는 단계는?",o:["개념적 모델링","논리적 모델링","물리적 모델링","운영 모델링"],a:1,e:"정규화는 논리 단계."},
+{t:"t11",s:"데이터 모델링의 세 가지 관점에 해당하지 않는 것은?",o:["데이터 관점","프로세스 관점","상관 관점","사용자 관점"],a:3,e:"데이터 · 프로세스 · 상관."},
+{t:"t12",s:"반정규화에 대한 설명으로 적절하지 않은 것은?",o:["조회 성능 향상을 위해 의도적으로 중복을 허용한다","반정규화를 하면 데이터 무결성이 향상된다","테이블 병합·분할, 중복 컬럼 추가 등의 기법이 있다","적용 전에 다른 방법으로 해결 가능한지 먼저 검토한다"],a:1,e:"중복 허용 → 무결성은 오히려 위험."},
+{t:"t12",s:"반정규화를 적용하기 전에 먼저 검토할 대안이 아닌 것은?",o:["뷰(View) 사용","클러스터링 적용","인덱스 조정","컬럼 중복화"],a:3,e:"컬럼 중복화는 반정규화 기법 자체."},
+{t:"t13",s:"슈퍼타입과 서브타입을 하나의 테이블로 통합하는 변환 방식은?",o:["One to One Type","Plus Type","Single Type (All in One)","Partition Type"],a:2,e:"하나로 통합 = Single(All in One)."},
+{t:"t13",s:"슈퍼타입과 각 서브타입을 모두 개별 테이블로 만드는 방식은?",o:["One to One Type","Plus Type","Single Type","All in One Type"],a:0,e:"각각 개별 = One to One."},
+{t:"t14",s:"COL 값이 <code>10, NULL, 20</code>일 때 결과가 틀린 것은?",o:["COUNT(*) = 3","COUNT(COL) = 2","SUM(COL) = 30","AVG(COL) = 10"],a:3,e:"AVG = 30 / 2 = 15."},
+{t:"t14",s:"NULL에 대한 설명으로 적절하지 않은 것은?",o:["NULL과 숫자의 사칙연산 결과는 NULL이다","<code>WHERE COL = NULL</code>로 NULL인 행을 조회할 수 있다","NULL은 공백이나 0과 다르다","NULL 여부는 IS NULL / IS NOT NULL로 비교한다"],a:1,e:"= NULL은 결과 0건. IS NULL을 씁니다."},
+{t:"t15",s:"트랜잭션의 특성과 설명의 연결이 틀린 것은?",o:["원자성 – 모두 수행되거나 전혀 수행되지 않는다","일관성 – 실행 전후 DB가 일관된 상태를 유지한다","고립성 – 성공한 트랜잭션 결과는 영구히 반영된다","지속성 – 커밋된 결과는 장애가 나도 유지된다"],a:2,e:"영구 반영은 지속성. 고립성은 간섭 차단."},
+{t:"t15",s:"계좌이체 중 출금만 되고 입금 전에 장애가 났을 때, 출금까지 취소되어야 하는 근거가 되는 특성은?",o:["원자성","일관성","고립성","지속성"],a:0,e:"전부 아니면 전무 = 원자성."}
+];
+
+
+/* ===================== 2과목 ===================== */
+const T2=[
+{id:"b1",part:"함수",name:"문자열 함수",
+ c:"<ul><li><b>LENGTH</b> 글자 수 / <b>LENGTHB</b> 바이트 수</li><li><b>TRIM</b> 양쪽 / <b>LTRIM</b> 왼쪽 / <b>RTRIM</b> 오른쪽 공백(또는 지정 문자) 제거</li><li><b>SUBSTR</b>(문자, 시작, 길이) 잘라내기 / <b>INSTR</b>(문자, 찾을문자) 위치 찾기</li><li><b>LPAD / RPAD</b>(문자, 전체길이, 채울문자) 자리 채우기</li><li><b>CONCAT</b>(a, b) 결합</li><li><b>REPLACE</b> 덩어리 교체 / <b>TRANSLATE</b> 글자 단위 1:1 대치</li></ul>",
+ u:"<p>결과값을 직접 계산하는 문제가 나온다. 위치는 <b>1부터</b> 센다.</p>",
+ tip:"<p>LENGTHB는 DB 인코딩에 따라 한글 바이트가 다르다 (UTF-8은 한글 1자 = 3바이트).</p><p>Oracle CONCAT은 <b>인자 2개만</b>. 3개 이상 붙이려면 <code>||</code>.</p><p><span class='trap'>함정</span> REPLACE는 'AB'라는 <b>덩어리</b>를 찾고, TRANSLATE는 A→X, B→Y처럼 <b>글자마다</b> 바꾼다.</p>",
+ ex:"<pre>LENGTH('SQL자격')          = 5\nLENGTHB('SQL자격')         = 9   (UTF-8)\nLTRIM('xxAxx', 'x')        = 'Axx'\nSUBSTR('DATABASE', 3, 4)   = 'TABA'\nINSTR('HELLO', 'L')        = 3\nLPAD('7', 3, '0')          = '007'\nREPLACE('ABCABC','AB','X')   = 'XCXC'\nTRANSLATE('ABCABC','AB','XY') = 'XYCXYC'</pre>"},
+{id:"b2",name:"숫자 함수",
+ c:"<ul><li><b>ROUND</b> 반올림 / <b>TRUNC</b> 절삭 (자릿수 인자)</li><li><b>FLOOR</b> 바닥 = 내림 / <b>CEIL</b> 천장 = 올림 (정수로)</li><li><b>MOD</b>(a, b) 나머지 / <b>SIGN</b>(n) 양수 1, 0은 0, 음수 -1</li></ul>",
+ u:"<p>자릿수 인자: 1 = 소수 첫째 자리까지, 0 = 정수, <b>-1 = 10의 자리</b>, -2 = 100의 자리.</p>",
+ tip:"<p>FLOOR는 바닥(더 작은 쪽), CEIL은 천장(더 큰 쪽). <b>음수</b>에서 헷갈린다: CEIL(-3.2) = -3, FLOOR(-3.2) = -4.</p><p>ROUND, TRUNC는 날짜에도 쓴다 → 날짜 함수 참고.</p>",
+ ex:"<pre>ROUND(1234.567, 1)  = 1234.6\nTRUNC(1234.567, 1)  = 1234.5\nROUND(1235, -1)     = 1240\nTRUNC(1234.567, -1) = 1230\nFLOOR(3.7) = 3    CEIL(3.2) = 4\nMOD(17, 5) = 2    SIGN(-15) = -1</pre>"},
+{id:"b3",name:"NULL 처리 함수",
+ c:"<ul><li><b>NVL</b>(a, b): a가 NULL이면 b</li><li><b>NVL2</b>(a, b, c): a가 NULL이 <b>아니면 b</b>, NULL이면 c</li><li><b>COALESCE</b>(a, b, c…): 처음으로 NULL 아닌 값</li><li><b>NULLIF</b>(a, b): 두 값이 <b>같으면 NULL</b>, 다르면 a</li><li><b>IFNULL</b>: MySQL의 NVL / <b>ISNULL</b>: SQL Server의 NVL</li></ul>",
+ u:"<p>NULL이 섞인 계산 컬럼을 0이나 다른 값으로 바꿀 때 쓴다. <code>SAL + NVL(COMM, 0)</code></p>",
+ tip:"<p><b>NULLIF</b>가 제일 많이 틀린다. NULL을 '없애는' 함수가 아니라 '만드는' 함수.</p><p>NVL2는 순서 주의: NULL 아닐 때 값이 <b>먼저</b>.</p>",
+ ex:"<pre>NVL(NULL, 0)             = 0\nNVL2(NULL, 'A', 'B')     = 'B'\nNVL2('X', 'A', 'B')      = 'A'\nCOALESCE(NULL, NULL, 3)  = 3\nNULLIF(10, 10)           = NULL\nNULLIF(10, 20)           = 10</pre>"},
+{id:"b4",name:"날짜 함수",
+ c:"<ul><li><b>TO_DATE</b>: 문자 → 날짜</li><li><b>TO_CHAR</b>: 날짜(숫자) → 문자</li><li><b>EXTRACT</b>(YEAR | MONTH | DAY FROM 날짜): 연·월·일 추출</li><li><b>SYSDATE</b>: 현재 날짜·시간</li></ul>",
+ u:"<p>날짜 연산 단위는 <b>1 = 1일</b>.<br>1시간 = <code>1/24</code>, 1분 = <code>1/24/60</code>, 1초 = <code>1/24/60/60</code><br>날짜 − 날짜 = 일수(숫자)</p>",
+ tip:"<p>날짜 ROUND 기준: 'MM'이면 <b>16일</b>부터 다음 달로, 'YYYY'면 <b>7월</b>부터 다음 해로, 일 단위면 <b>정오</b>부터 다음 날로.<br>TRUNC는 무조건 버림.</p>",
+ ex:"<pre>SYSDATE + 1         -- 내일 이 시각\nSYSDATE + 1/24      -- 1시간 후\nSYSDATE + 30/24/60  -- 30분 후\n\nEXTRACT(MONTH FROM DATE '2025-07-15') = 7\nTO_CHAR(SYSDATE, 'YYYY-MM-DD')\nROUND(DATE '2025-03-20', 'MM') = 2025-04-01\nTRUNC(DATE '2025-03-20', 'MM') = 2025-03-01</pre>"},
+{id:"b5",name:"조건 함수 · DECODE vs CASE",
+ c:"<ul><li><b>DECODE</b>(컬럼, 값1, 결과1, 값2, 결과2, 기본값): <b>Oracle 전용</b>, <b>같다(=) 비교만</b></li><li><b>CASE WHEN</b> 조건 THEN 결과 … ELSE 기본값 END: <b>표준</b>, 범위·논리 연산 가능</li></ul>",
+ u:"<p>범위 조건(급여 3000 이상 등)이면 CASE WHEN. 단순히 값 치환이면 DECODE도 가능.</p>",
+ tip:"<p>CASE에서 ELSE 생략 + 어떤 조건도 안 맞음 → <b>NULL</b>. DECODE에서 기본값 생략도 NULL.</p><p>CASE는 위에서부터 처음 맞는 WHEN 하나만 적용.</p>",
+ ex:"<pre>DECODE(DEPT, 10, '영업', 20, '개발', '기타')\n\nCASE WHEN SAL &gt;= 3000 THEN '高'\n     WHEN SAL &gt;= 2000 THEN '中'\n     ELSE '低' END</pre>"},
+{id:"b6",part:"SQL 기본 · 조인",name:"SQL 기본 구조 · 실행 순서",
+ c:"<ul><li><b>SELECT</b> 조회할 컬럼 / <b>FROM</b> 출처 / <b>WHERE</b> 행 조건</li><li><b>GROUP BY</b> 그룹화 / <b>HAVING</b> 그룹 조건 / <b>ORDER BY</b> 정렬</li></ul><p><b>실행 순서: FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY</b></p>",
+ u:"<ul><li>SELECT에서 만든 별칭은 <b>ORDER BY에서만</b> 사용 가능</li><li>WHERE에서는 집계 함수 불가 → HAVING에서</li><li>GROUP BY를 쓰면 SELECT의 일반 컬럼은 GROUP BY에 있어야 함</li></ul>",
+ tip:"<span class='memo'>푸에그 하서로</span><p>FROM · WHERE · GROUP · HAVING · SELECT · ORDER</p>",
+ ex:"<pre>SELECT DEPT, SUM(SAL) AS TOT  -- ⑤\nFROM EMP                       -- ①\nWHERE SAL &gt; 1000               -- ②\nGROUP BY DEPT                  -- ③\nHAVING SUM(SAL) &gt; 5000         -- ④\nORDER BY TOT DESC;             -- ⑥ 별칭 OK</pre>"},
+{id:"b7",name:"조건 연산 · 필터링",
+ c:"<ul><li><b>LIKE</b>: <code>_</code> 정확히 한 글자, <code>%</code> 0글자 이상</li><li><b>BETWEEN a AND b</b>: <b>양 끝 포함</b></li><li><b>IN</b>(목록): 목록의 <b>NULL은 무시</b></li><li><b>COUNT(*)</b> 모든 행 / <b>COUNT(컬럼)</b> NULL 제외</li></ul>",
+ u:"<p>연산자 우선순위<br>괄호 → 산술 → 연결(||) → 비교 → IS NULL·LIKE·IN → BETWEEN → <b>NOT → AND → OR</b></p>",
+ tip:"<span class='memo'>발사연 비인낙 엔노</span><p>AND가 OR보다 먼저 묶인다.</p><p><span class='trap'>함정</span> <code>IN (10, NULL)</code>은 NULL을 무시하고 10만 찾지만, <code>NOT IN (10, NULL)</code>은 결과 <b>0건</b>.</p>",
+ ex:"<pre>WHERE A = 1 OR B = 2 AND C = 3\n→ A = 1 OR (B = 2 AND C = 3)\n\nLIKE '_A%'  → 두 번째 글자가 A (BAKER ○)\n\nCOL: 10, NULL, NULL\nCOUNT(*) = 3   COUNT(COL) = 1</pre>"},
+{id:"b8",name:"JOIN",
+ c:"<ul><li><b>INNER</b>: 양쪽 모두 조건이 맞는 행만 (교집합)</li><li><b>OUTER</b>(LEFT / RIGHT / FULL): 기준 테이블 전부, 매칭 없으면 NULL</li><li><b>셀프 조인</b>: 한 테이블에 별칭 두 개를 붙여 자기 자신과 조인</li><li><b>NATURAL</b>: 이름이 같은 <b>모든</b> 컬럼으로 자동 조인</li><li><b>CROSS</b>: 조건 없이 모든 조합 (카티션 곱, M × N)</li></ul>",
+ u:"<p>결과 행 수를 세는 문제가 나온다. 매칭된 쌍 + 기준 쪽에서 남는 행.</p>",
+ tip:"<p><span class='trap'>함정</span> NATURAL·USING의 조인 컬럼에 <b>테이블 별칭(접두사)을 붙이면 오류</b>.</p><p>셀프 조인은 <b>별칭이 필수</b>.</p>",
+ ex:"<pre>사원: A(10) B(20) C(40)    부서: 10 20 30\nINNER       = 2행 (A, B)\nLEFT(사원)  = 3행 (C는 부서 NULL)\nFULL        = 4행 (A, B, C, 30)\nCROSS       = 3 × 3 = 9행\n\n-- 셀프 조인: 사원과 그 관리자 이름\nSELECT E.ENAME, M.ENAME\nFROM EMP E JOIN EMP M ON E.MGR = M.EMPNO;</pre>"},
+{id:"b9",part:"윈도우 · 그룹 함수",name:"윈도우 함수 기본 문법",
+ c:"<p>GROUP BY와 달리 <b>행을 유지</b>하면서 집계값을 옆에 붙인다.</p><pre>함수() OVER (PARTITION BY 컬럼\n             ORDER BY 컬럼\n             [윈도잉 절])</pre>",
+ u:"<p>윈도잉 절 = 계산 범위<br>· <b>ROWS</b>: 물리적인 <b>행 개수</b> 기준<br>· <b>RANGE</b>: ORDER BY <b>값의 범위</b> 기준 (같은 값은 한 묶음)<br><code>UNBOUNDED PRECEDING</code> 처음 / <code>CURRENT ROW</code> 현재 / <code>UNBOUNDED FOLLOWING</code> 끝</p>",
+ tip:"<p>ORDER BY만 쓰고 윈도잉 절을 생략하면 기본 범위가 <b>처음 ~ 현재 행</b> → 누적합이 된다.</p>",
+ ex:"<pre>SUM(SAL) OVER (PARTITION BY DEPT)\n  → 부서 합계를 모든 행 옆에\n\nSUM(SAL) OVER (ORDER BY SAL\n  ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)\n  → 누적합</pre>"},
+{id:"b10",name:"그룹핑 함수",
+ c:"<ul><li><b>ROLLUP</b>(A, B): '말아 올린다'. (A,B) → A별 소계 → 총계. <b>순서 중요</b></li><li><b>CUBE</b>(A, B): 가능한 <b>모든 조합</b>. (A,B), A, B, 총계</li><li><b>GROUPING SETS</b>(A, B): 필요한 조합만 골라서 (A별, B별). 총계 없음</li><li><b>GROUPING</b>(컬럼): 소계·총계 행이면 <b>1</b>, 데이터 행이면 0</li></ul>",
+ u:"<p>인자 목록을 실제 그룹 조합으로 펼쳐 놓고 \"나오는 것 / 안 나오는 것\"을 고른다.</p>",
+ tip:"<p>그룹 수: ROLLUP 인자 n개 → <b>n+1</b>, CUBE → <b>2ⁿ</b>.</p><p>GROUPING은 CASE와 같이 써서 소계 행에 '소계', '총계' 라벨을 붙인다.</p>",
+ ex:"<pre>ROLLUP(DEPT, JOB)\n→ DEPT+JOB / DEPT 소계 / 총계      (JOB별 없음)\nCUBE(DEPT, JOB)\n→ DEPT+JOB / DEPT / JOB / 총계\nGROUPING SETS(DEPT, JOB)\n→ DEPT / JOB\n\nCASE GROUPING(JOB) WHEN 1 THEN '소계' ELSE JOB END</pre>"},
+{id:"b11",name:"순위 · 분석 함수",
+ c:"<ul><li><b>RANK</b>: 공동 순위 다음은 <b>건너뜀</b> (1, 1, 3)</li><li><b>DENSE_RANK</b>: 건너뛰지 않음 (1, 1, 2)</li><li><b>ROW_NUMBER</b>: 무조건 고유 번호 (1, 2, 3)</li><li><b>LAG</b> 이전 행 / <b>LEAD</b> 다음 행 값</li><li><b>FIRST_VALUE / LAST_VALUE</b>: 범위의 첫 / 마지막 값</li><li><b>RATIO_TO_REPORT</b>: 합계 대비 비율 / <b>CUME_DIST</b>: 누적 분포 / <b>PERCENT_RANK</b>: 백분위 순위 / <b>NTILE</b>(n): n개 그룹으로 나눔</li></ul>",
+ u:"<p>동점 데이터를 주고 순위 값을 묻는 문제가 가장 많다.</p>",
+ tip:"<p><span class='trap'>함정</span> <code>LAST_VALUE(..) OVER (ORDER BY ..)</code>는 기본 범위가 현재 행까지라 <b>현재 행 값</b>이 나온다. 진짜 마지막 값을 보려면 <code>UNBOUNDED FOLLOWING</code>까지 지정.</p><p>NTILE은 나머지를 <b>앞 그룹부터</b> 하나씩 더 준다. 5행 NTILE(2) → 3, 2.</p>",
+ ex:"<div class='tbl'><table><tr><th>점수</th><th>RANK</th><th>DENSE</th><th>ROW_NUM</th><th>PCT_RANK</th><th>CUME</th></tr><tr><td>100</td><td>1</td><td>1</td><td>1</td><td>0</td><td>0.25</td></tr><tr><td>90</td><td>2</td><td>2</td><td>2</td><td>0.33</td><td>0.75</td></tr><tr><td>90</td><td>2</td><td>2</td><td>3</td><td>0.33</td><td>0.75</td></tr><tr><td>80</td><td><b>4</b></td><td><b>3</b></td><td>4</td><td>1</td><td>1</td></tr></table></div>"},
+{id:"b12",part:"서브쿼리 · 집합 · 계층 · TOP N",name:"서브쿼리",
+ c:"<ul><li>위치: SELECT절 = <b>스칼라</b>, FROM절 = <b>인라인 뷰</b>, WHERE절 = <b>중첩</b></li><li>동작: 메인 쿼리 컬럼 참조 = <b>연관(상관)</b>, 독립 = <b>비연관</b></li><li>반환: 단일행 / 다중행 / 다중컬럼</li></ul>",
+ u:"<p>단일행 → <code>=, &lt;, &gt;</code><br>다중행 → <code>IN, ANY, ALL, EXISTS</code></p>",
+ tip:"<p><span class='trap'>함정</span> 다중행 결과에 <code>=</code> → <b>오류</b>.<br>스칼라 서브쿼리는 반드시 <b>1행 1컬럼</b>. 2행 이상 나오면 오류.</p><p><code>&gt; ALL</code> = 최댓값보다 큼, <code>&gt; ANY</code> = 최솟값보다 큼.</p>",
+ ex:"<pre>SAL &gt; ALL (100, 200, 300)  → SAL &gt; 300\nSAL &gt; ANY (100, 200, 300)  → SAL &gt; 100\n\n-- 연관 서브쿼리: 자기 부서 평균보다 많이 받는 사원\nSELECT * FROM EMP E\nWHERE SAL &gt; (SELECT AVG(SAL) FROM EMP\n             WHERE DEPT = E.DEPT);</pre>"},
+{id:"b13",name:"집합 연산자",
+ c:"<ul><li><b>UNION</b>: 합집합, 중복 제거</li><li><b>UNION ALL</b>: 합집합, 중복 포함</li><li><b>INTERSECT</b>: 교집합</li><li><b>MINUS</b>(Oracle) / <b>EXCEPT</b>(SQL Server): 차집합, <b>순서 중요</b></li></ul>",
+ u:"<p>위아래 SELECT의 <b>컬럼 수, 데이터 타입, 순서</b>가 맞아야 한다. 결과 컬럼명은 첫 번째 SELECT 기준.</p>",
+ tip:"<p>ORDER BY는 <b>맨 마지막에 한 번만</b>.<br>A MINUS B ≠ B MINUS A.</p>",
+ ex:"<pre>A = {1, 2, 2, 3}   B = {2, 3, 4}\nUNION ALL → 7행\nUNION     → 1, 2, 3, 4\nINTERSECT → 2, 3\nA MINUS B → 1\nB MINUS A → 4</pre>"},
+{id:"b14",name:"계층형 쿼리",
+ c:"<p>조직도 같은 트리 구조를 SQL로 표현.</p><ul><li><b>START WITH</b>: 시작점(루트)</li><li><b>CONNECT BY</b>: 부모-자식 연결고리</li><li><b>LEVEL</b>: 깊이, 루트 = 1</li><li><b>CONNECT_BY_ROOT</b>: 최상위 루트 값</li><li><b>CONNECT_BY_ISLEAF</b>: 막내(리프)면 1</li><li><b>ORDER SIBLINGS BY</b>: 계층 유지하며 형제끼리 정렬</li></ul>",
+ u:"<p><code>PRIOR 자식 = 부모</code> → <b>순방향</b> (위에서 아래로)<br><code>PRIOR 부모 = 자식</code> → <b>역방향</b> (아래에서 위로)<br>사원 테이블이면 자식 = EMPNO, 부모 = MGR.</p>",
+ tip:"<span class='memo'>피자순</span><p>PRIOR 자식 = 부모 → 순방향.</p><p>그냥 ORDER BY를 쓰면 계층 순서가 깨진다 → ORDER SIBLINGS BY.</p>",
+ ex:"<pre>SELECT LEVEL, EMPNO, MGR\nFROM EMP\nSTART WITH MGR IS NULL\nCONNECT BY PRIOR EMPNO = MGR;   -- 피자순 = 순방향\n\nKING        LEVEL 1\n └ JONES    LEVEL 2\n    └ SCOTT LEVEL 3 (ISLEAF = 1)</pre>"},
+{id:"b15",name:"TOP N 쿼리",
+ c:"<ul><li>Oracle: <b>ROWNUM</b></li><li>SQL Server: <b>TOP</b>(n), 동점 포함은 <b>WITH TIES</b></li><li>표준: <b>OFFSET</b> n ROWS <b>FETCH NEXT</b> m ROWS ONLY</li></ul>",
+ u:"<p>ROWNUM은 <b>정렬 전</b>에 번호가 매겨진다 → 인라인 뷰 안에서 ORDER BY, 바깥에서 ROWNUM 제한.</p>",
+ tip:"<p><span class='trap'>함정</span> <code>ROWNUM = 1</code>, <code>ROWNUM &lt;= n</code>은 OK. <code>ROWNUM = 2</code>, <code>ROWNUM &gt; 1</code>은 <b>0건</b>.</p><p>OFFSET 5 = 5개 <b>건너뛰고</b> 6번째부터.</p>",
+ ex:"<pre>-- Oracle 급여 상위 3명\nSELECT * FROM (SELECT * FROM EMP ORDER BY SAL DESC)\nWHERE ROWNUM &lt;= 3;\n\n-- SQL Server 동점 포함 상위 3명\nSELECT TOP(3) WITH TIES * FROM EMP ORDER BY SAL DESC;\n\n-- 6~8번째\nORDER BY SAL DESC\nOFFSET 5 ROWS FETCH NEXT 3 ROWS ONLY;</pre>"},
+{id:"b16",part:"PIVOT · 정규식 · 관리 구문",name:"PIVOT / UNPIVOT",
+ c:"<ul><li><b>PIVOT</b>: 행 → 열 (세로를 가로로)</li><li><b>UNPIVOT</b>: 열 → 행 (가로를 다시 세로로)</li></ul>",
+ u:"<p>PIVOT 패턴: <b>집계 함수</b>(SUM 등) <b>FOR</b> 대상 컬럼 <b>IN</b> (값 목록)</p>",
+ tip:"<p>UNPIVOT은 <b>집계 함수를 쓰지 않는다</b>. 기본적으로 <b>NULL은 제외</b> (포함하려면 INCLUDE NULLS).</p>",
+ ex:"<pre>SELECT *\nFROM (SELECT DEPT, JOB, SAL FROM EMP)\nPIVOT (SUM(SAL) FOR JOB IN ('CLERK' AS C, 'MANAGER' AS M));\n\nDEPT |   C  |   M\n  10 | 1300 | 2450\n  20 | 1900 | 2975</pre>"},
+{id:"b17",name:"정규 표현식",
+ c:"<p>복잡한 문자열 패턴 처리. REGEXP_LIKE, REGEXP_SUBSTR, REGEXP_REPLACE, REGEXP_INSTR, REGEXP_COUNT.</p><div class='tbl'><table><tr><th>구분</th><th>기호</th><th>뜻</th></tr><tr><td>앵커</td><td>^ / $</td><td>시작 / 끝</td></tr><tr><td>매칭</td><td>. / |</td><td>아무 문자 1개 / 또는</td></tr><tr><td>반복</td><td>* + ?</td><td>0회 이상 / 1회 이상 / 0~1회</td></tr><tr><td></td><td>{m,n}</td><td>m회 이상 n회 이하</td></tr><tr><td>그룹</td><td>( ) / [ ]</td><td>그룹 / 문자 집합</td></tr></table></div>",
+ u:"<p>패턴을 앞에서부터 하나씩 해석한다: 위치(앵커) → 어떤 문자(매칭) → 몇 번(반복).</p>",
+ tip:"<p><span class='trap'>함정</span> <code>^</code>가 <b>[ ] 밖</b>이면 '시작', <b>[ ] 안</b>이면 '부정'.<br><code>^[0-9]</code> 숫자로 시작 / <code>[^0-9]</code> 숫자가 아닌 문자</p>",
+ ex:"<pre>REGEXP_LIKE(NAME, '^A')            -- A로 시작\nREGEXP_LIKE(NAME, 'N$')            -- N으로 끝\nREGEXP_SUBSTR('abc123def', '[0-9]+') = '123'\nREGEXP_REPLACE('a1b2', '[0-9]', '') = 'ab'\n'ab{2,3}'  → abb, abbb</pre>"},
+{id:"b18",name:"관리 구문 · DML · TCL · DDL · DCL",
+ c:"<div class='tbl'><table><tr><th>분류</th><th>명령어</th></tr><tr><td>DML</td><td>SELECT, INSERT, UPDATE, DELETE, MERGE</td></tr><tr><td>TCL</td><td>COMMIT, ROLLBACK, SAVEPOINT</td></tr><tr><td>DDL</td><td>CREATE, ALTER, DROP, TRUNCATE, RENAME</td></tr><tr><td>DCL</td><td>GRANT, REVOKE</td></tr></table></div>",
+ u:"<p><b>묵시적 커밋</b>: Oracle은 DDL을 실행하면 자동 COMMIT → 앞에 하던 DML까지 확정.<br><code>ROLLBACK TO 저장점</code>: 그 지점 이후만 취소.</p><p><b>CASCADE</b>: 연관된 것까지 연쇄 삭제 / <b>RESTRICT</b>: 참조하는 게 있으면 삭제를 막음.</p>",
+ tip:"<p><span class='trap'>함정</span> TRUNCATE는 <b>DDL</b>.</p><div class='tbl'><table><tr><th></th><th>DELETE</th><th>TRUNCATE</th><th>DROP</th></tr><tr><td>분류</td><td>DML</td><td>DDL</td><td>DDL</td></tr><tr><td>구조</td><td>유지</td><td>유지</td><td>삭제</td></tr><tr><td>롤백</td><td>가능</td><td>불가</td><td>불가</td></tr></table></div>",
+ ex:"<pre>INSERT A;\nSAVEPOINT S1;\nINSERT B;\nROLLBACK TO S1;    -- B만 취소\nCOMMIT;            -- A만 반영\n\nINSERT C;\nCREATE TABLE T (..);  -- 묵시적 커밋 → C 확정\nROLLBACK;             -- C 안 지워짐\n\nGRANT SELECT ON EMP TO KIM;\nREVOKE SELECT ON EMP FROM KIM;</pre>"}
+];
+const Q2=[
+{t:"b1",s:"<code>LENGTH('SQL자격')</code>의 결과는?",o:["5","9","7","3"],a:0,e:"글자 수 = 5. LENGTHB(UTF-8)이면 9."},
+{t:"b1",s:"<code>REPLACE('ABCABC', 'AB', 'X')</code>의 결과는?",o:["'XYCXYC'","'XCXC'","'XBCXBC'","'ABCABC'"],a:1,e:"'AB' 덩어리를 'X'로 교체."},
+{t:"b1",s:"<code>TRANSLATE('ABCABC', 'AB', 'XY')</code>의 결과는?",o:["'XCXC'","'XYABC'","'XYCXYC'","'ABCXY'"],a:2,e:"A→X, B→Y 글자 단위 대치."},
+{t:"b1",s:"<code>INSTR('HELLO', 'L')</code>의 결과는?",o:["2","3","4","0"],a:1,e:"처음 나오는 L의 위치 = 3."},
+{t:"b1",s:"<code>LPAD('7', 3, '0')</code>의 결과는?",o:["'700'","'0007'","'7'","'007'"],a:3,e:"전체 3자리가 되도록 왼쪽을 0으로 채움."},
+{t:"b2",s:"<code>TRUNC(1234.567, -1)</code>의 결과는?",o:["1234.5","1240","1230","1200"],a:2,e:"-1 = 10의 자리에서 절삭 → 1230."},
+{t:"b2",s:"<code>CEIL(-3.2)</code>의 결과는?",o:["-4","-3","-3.2","3"],a:1,e:"천장 = 더 큰 정수 → -3."},
+{t:"b2",s:"<code>SIGN(-15)</code>의 결과는?",o:["-15","15","0","-1"],a:3,e:"음수면 -1."},
+{t:"b2",s:"<code>MOD(17, 5)</code>의 결과는?",o:["2","3","12","5"],a:0,e:"17 = 5×3 + 2."},
+{t:"b3",s:"결과가 NULL인 것은?",o:["NVL(NULL, 0)","NULLIF('A', 'A')","COALESCE(NULL, 'B')","NVL2('X', 'Y', 'Z')"],a:1,e:"NULLIF는 두 값이 같으면 NULL."},
+{t:"b3",s:"<code>NVL2(COMM, SAL + COMM, SAL)</code>에서 COMM이 NULL이면 반환되는 값은?",o:["SAL + COMM","NULL","SAL","COMM"],a:2,e:"NVL2(a, NULL 아닐 때, NULL일 때)."},
+{t:"b3",s:"MySQL에서 Oracle의 NVL과 같은 역할을 하는 고유 함수는?",o:["ISNULL","IFNULL","NULLIF","NVL2"],a:1,e:"MySQL = IFNULL, SQL Server = ISNULL."},
+{t:"b4",s:"<code>SYSDATE + 1/24</code>가 의미하는 것은?",o:["1일 후","1분 후","1시간 후","24일 후"],a:2,e:"1 = 하루, 1/24 = 1시간."},
+{t:"b4",s:"현재로부터 1분 후를 나타내는 식은?",o:["SYSDATE + 1/60","SYSDATE + 1/24/60","SYSDATE + 1/24","SYSDATE + 60"],a:1,e:"1분 = 1/24/60."},
+{t:"b4",s:"<code>EXTRACT(MONTH FROM DATE '2025-07-15')</code>의 결과는?",o:["2025","15","'07-15'","7"],a:3,e:"월만 추출 → 7."},
+{t:"b4",s:"<code>ROUND(DATE '2025-03-20', 'MM')</code>의 결과는?",o:["2025-03-01","2025-04-01","2025-03-20","2026-01-01"],a:1,e:"월 반올림은 16일부터 다음 달 → 4월 1일."},
+{t:"b4",s:"날짜를 문자열로 바꾸는 함수는?",o:["TO_DATE","TO_CHAR","EXTRACT","TO_NUMBER"],a:1,e:"TO_CHAR: 날짜 → 문자, TO_DATE: 문자 → 날짜."},
+{t:"b5",s:"DECODE에 대한 설명으로 틀린 것은?",o:["Oracle 전용 함수이다","같다(=) 비교만 할 수 있다","범위 비교(&gt;, &lt;)를 직접 쓸 수 있다","일치하는 값이 없고 기본값도 없으면 NULL을 반환한다"],a:2,e:"범위 비교는 CASE WHEN으로."},
+{t:"b5",s:"CASE WHEN에서 ELSE를 생략했는데 어떤 조건도 맞지 않으면?",o:["0","NULL","오류","빈 문자열"],a:1,e:"ELSE 생략 = ELSE NULL."},
+{t:"b6",s:"SELECT 문의 논리적 실행 순서로 옳은 것은?",o:["SELECT → FROM → WHERE → GROUP BY → HAVING → ORDER BY","FROM → WHERE → GROUP BY → HAVING → SELECT → ORDER BY","FROM → WHERE → SELECT → GROUP BY → HAVING → ORDER BY","FROM → GROUP BY → WHERE → HAVING → SELECT → ORDER BY"],a:1,e:"푸에그 하서로."},
+{t:"b6",s:"SELECT절에서 정의한 별칭을 사용할 수 있는 절은?",o:["WHERE","GROUP BY","HAVING","ORDER BY"],a:3,e:"SELECT보다 뒤에 실행되는 건 ORDER BY뿐."},
+{t:"b6",s:"<code>SELECT DEPT, NAME, SUM(SAL) FROM EMP GROUP BY DEPT;</code>의 실행 결과는?",o:["부서별 합계가 나온다","오류가 발생한다","NAME은 첫 번째 값이 나온다","NAME별 합계가 나온다"],a:1,e:"NAME이 GROUP BY에도 집계 함수에도 없어서 오류."},
+{t:"b7",s:"<code>WHERE A = 1 OR B = 2 AND C = 3</code>과 같은 의미는?",o:["(A = 1 OR B = 2) AND C = 3","A = 1 OR (B = 2 AND C = 3)","(A = 1 AND C = 3) OR B = 2","오류가 발생한다"],a:1,e:"AND가 OR보다 먼저."},
+{t:"b7",s:"<code>NAME LIKE '_A%'</code>를 만족하는 값은?",o:["ALLEN","SCOTT","BAKER","CLARK"],a:2,e:"_ 한 글자 다음 A → 두 번째 글자가 A."},
+{t:"b7",s:"<code>SAL BETWEEN 1000 AND 2000</code>과 같은 조건은?",o:["SAL &gt; 1000 AND SAL &lt; 2000","SAL &gt;= 1000 AND SAL &lt;= 2000","SAL &gt;= 1000 OR SAL &lt;= 2000","SAL &gt; 1000 AND SAL &lt;= 2000"],a:1,e:"BETWEEN은 양 끝 포함."},
+{t:"b7",s:"COL 값이 10, 20, NULL일 때 <code>WHERE COL IN (10, NULL)</code>의 결과 행 수는?",o:["0","1","2","3"],a:1,e:"IN 목록의 NULL은 무시 → 10인 행 1건."},
+{t:"b7",s:"COL 값이 10, NULL, NULL일 때 <code>COUNT(COL)</code>의 결과는?",o:["3","0","1","NULL"],a:2,e:"COUNT(컬럼)은 NULL 제외. COUNT(*)라면 3."},
+{t:"b8",s:"사원 A(10), B(20), C(40) / 부서 10, 20, 30일 때 <b>사원 LEFT OUTER JOIN 부서</b>의 결과 행 수는?",o:["2","3","4","9"],a:1,e:"사원 3명 전부, C는 부서 정보 NULL."},
+{t:"b8",s:"3건인 테이블과 4건인 테이블을 CROSS JOIN 하면 결과 행 수는?",o:["7","3","12","4"],a:2,e:"M × N = 12."},
+{t:"b8",s:"NATURAL JOIN에 대한 설명으로 틀린 것은?",o:["이름이 같은 모든 컬럼으로 자동 조인한다","ON 절을 쓰지 않는다","조인 컬럼에 테이블 별칭(접두사)을 붙일 수 있다","같은 이름 컬럼의 데이터 타입이 호환되어야 한다"],a:2,e:"접두사를 붙이면 오류."},
+{t:"b8",s:"셀프 조인에 대한 설명으로 옳은 것은?",o:["하나의 테이블에 서로 다른 별칭을 붙여 자기 자신과 조인한다","반드시 OUTER JOIN으로만 작성해야 한다","별칭 없이도 작성할 수 있다","서로 다른 두 테이블이 필요하다"],a:0,e:"별칭 두 개로 같은 테이블을 두 번 씁니다."},
+{t:"b9",s:"윈도우 함수에 대한 설명으로 틀린 것은?",o:["결과 행 수가 줄지 않는다","PARTITION BY로 그룹을 나눈다","GROUP BY처럼 그룹당 한 행으로 줄어든다","OVER 안의 ORDER BY로 순서를 정한다"],a:2,e:"행을 유지하는 게 핵심."},
+{t:"b9",s:"윈도잉 절의 ROWS와 RANGE 차이로 옳은 것은?",o:["ROWS는 물리적 행 개수, RANGE는 값의 범위 기준이다","ROWS는 값의 범위, RANGE는 물리적 행 개수 기준이다","둘은 항상 같은 결과를 낸다","RANGE는 PARTITION BY 대신 쓰는 것이다"],a:0,e:"RANGE는 같은 값을 한 묶음으로 봅니다."},
+{t:"b9",s:"<code>SUM(SAL) OVER (ORDER BY SAL ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)</code>의 의미는?",o:["전체 합계","처음부터 현재 행까지의 누적합","현재 행의 값","현재 행부터 끝까지의 합"],a:1,e:"UNBOUNDED PRECEDING ~ CURRENT ROW = 누적."},
+{t:"b10",s:"<code>GROUP BY ROLLUP(DEPT, JOB)</code>에서 만들어지지 않는 집계는?",o:["DEPT+JOB별","DEPT별 소계","전체 합계","JOB별 소계"],a:3,e:"ROLLUP은 앞에서부터 말아 올림 → JOB 단독 소계 없음."},
+{t:"b10",s:"<code>CUBE(A, B)</code>가 만드는 그룹 조합의 개수(총계 포함)는?",o:["2","3","4","6"],a:2,e:"2² = 4."},
+{t:"b10",s:"<code>GROUPING SETS(DEPT, JOB)</code>의 결과로 옳은 것은?",o:["DEPT별, JOB별 집계","DEPT별, JOB별, 전체 합계","DEPT+JOB별, DEPT별, 전체","모든 조합"],a:0,e:"고른 것만, 총계 없음."},
+{t:"b10",s:"<code>GROUPING(DEPT)</code>가 1을 반환하는 행은?",o:["DEPT 값이 NULL인 원본 데이터 행","DEPT가 소계·총계로 집계된 행","첫 번째 행","모든 행"],a:1,e:"소계·총계 행 = 1, 데이터 행 = 0."},
+{t:"b11",s:"점수 100, 90, 90, 80에 <code>DENSE_RANK() OVER (ORDER BY 점수 DESC)</code>를 적용할 때 80점의 순위는?",o:["4","3","2","5"],a:1,e:"건너뛰지 않음 → 1, 2, 2, 3."},
+{t:"b11",s:"같은 데이터에 RANK를 적용할 때 80점의 순위는?",o:["2","3","4","5"],a:2,e:"건너뜀 → 1, 2, 2, 4."},
+{t:"b11",s:"현재 행 기준으로 이전 행의 값을 가져오는 함수는?",o:["LEAD","LAG","FIRST_VALUE","NTILE"],a:1,e:"LAG = 이전, LEAD = 다음."},
+{t:"b11",s:"부서 급여 합계 대비 각 사원 급여의 비율을 구하는 함수는?",o:["CUME_DIST","PERCENT_RANK","RATIO_TO_REPORT","NTILE"],a:2,e:"RATIO_TO_REPORT = 값 / 합계."},
+{t:"b11",s:"5개 행에 <code>NTILE(2)</code>를 적용하면 그룹별 행 수는?",o:["3, 2","2, 3","2, 2, 1","5"],a:0,e:"나머지는 앞 그룹부터."},
+{t:"b11",s:"<code>LAST_VALUE(SAL) OVER (ORDER BY SAL)</code>만 쓰면 현재 행 값이 나오는 이유는?",o:["기본 윈도우 범위가 처음 ~ 현재 행이라서","LAST_VALUE는 항상 현재 행을 반환해서","PARTITION BY가 없어서","오류라서"],a:0,e:"UNBOUNDED FOLLOWING까지 지정해야 진짜 마지막 값."},
+{t:"b12",s:"<code>SAL &gt; ALL (100, 200, 300)</code>과 같은 의미는?",o:["SAL &gt; 100","SAL &gt; 200","SAL &gt; 600","SAL &gt; 300"],a:3,e:"ALL = 모두보다 큼 = 최댓값보다 큼."},
+{t:"b12",s:"서브쿼리 결과가 여러 행인데 <code>=</code>로 비교하면?",o:["첫 번째 행과만 비교한다","IN처럼 동작한다","오류가 발생한다","결과가 0건이다"],a:2,e:"다중행은 IN, ANY, ALL, EXISTS."},
+{t:"b12",s:"FROM절에 사용하는 서브쿼리를 부르는 이름은?",o:["스칼라 서브쿼리","인라인 뷰","연관 서브쿼리","중첩 서브쿼리"],a:1,e:"SELECT절 = 스칼라, FROM절 = 인라인 뷰, WHERE절 = 중첩."},
+{t:"b12",s:"연관(상관) 서브쿼리에 대한 설명으로 옳은 것은?",o:["메인 쿼리의 컬럼을 참조한다","메인 쿼리와 무관하게 독립적으로 실행된다","FROM절에서만 사용할 수 있다","반드시 다중행을 반환한다"],a:0,e:"메인 컬럼 참조 = 연관, 독립 = 비연관."},
+{t:"b12",s:"스칼라 서브쿼리가 2개 행을 반환하면?",o:["첫 번째 행을 사용한다","두 값을 더한다","NULL을 반환한다","오류가 발생한다"],a:3,e:"스칼라는 반드시 1행 1컬럼."},
+{t:"b13",s:"A = {1, 2, 2, 3}, B = {2, 3, 4}일 때 <code>A UNION B</code>의 결과 행 수는?",o:["4","6","7","3"],a:0,e:"중복 제거 → 1, 2, 3, 4."},
+{t:"b13",s:"같은 A, B에서 결과가 틀린 것은?",o:["A UNION ALL B → 7행","A INTERSECT B → 2, 3","A MINUS B → 1","B MINUS A → 2, 4"],a:3,e:"B MINUS A = B에만 있는 것 = 4."},
+{t:"b13",s:"집합 연산자 사용 시 주의사항으로 틀린 것은?",o:["위아래 SELECT의 컬럼 수가 같아야 한다","데이터 타입이 호환되어야 한다","ORDER BY는 각 SELECT마다 쓸 수 있다","결과 컬럼명은 첫 번째 SELECT 기준이다"],a:2,e:"ORDER BY는 맨 마지막에 한 번만."},
+{t:"b14",s:"<code>START WITH MGR IS NULL CONNECT BY PRIOR EMPNO = MGR</code>에 대한 설명으로 옳은 것은?",o:["부하에서 관리자 방향(역방향)으로 전개된다","관리자에서 부하 방향(순방향)으로 전개된다","루트의 LEVEL은 0이다","MGR이 NULL인 행은 결과에서 제외된다"],a:1,e:"PRIOR 자식(EMPNO) = 부모(MGR) → 피자순 → 순방향."},
+{t:"b14",s:"막내(리프) 노드이면 1을 반환하는 것은?",o:["LEVEL","CONNECT_BY_ROOT","CONNECT_BY_ISLEAF","SYS_CONNECT_BY_PATH"],a:2,e:"ISLEAF = 리프인가?"},
+{t:"b14",s:"계층 구조를 유지하면서 형제끼리 정렬할 때 쓰는 것은?",o:["ORDER BY","ORDER SIBLINGS BY","GROUP BY","PARTITION BY"],a:1,e:"그냥 ORDER BY는 계층 순서를 깨뜨립니다."},
+{t:"b15",s:"Oracle에서 <code>WHERE ROWNUM &gt; 1</code>의 결과는?",o:["첫 행을 뺀 전부","오류","0건","1건"],a:2,e:"1번이 안 생기니 2번도 안 생깁니다."},
+{t:"b15",s:"Oracle에서 급여 상위 3명을 정확히 구하는 방법은?",o:["WHERE ROWNUM &lt;= 3 ORDER BY SAL DESC","인라인 뷰에서 ORDER BY SAL DESC 후 바깥에서 ROWNUM &lt;= 3","WHERE ROWNUM = 3","HAVING ROWNUM &lt;= 3"],a:1,e:"ROWNUM은 정렬 전에 붙으므로 먼저 정렬."},
+{t:"b15",s:"SQL Server에서 동점자를 포함해 상위 3명을 조회하는 문법은?",o:["TOP(3)","TOP(3) WITH TIES","ROWNUM &lt;= 3","LIMIT 3"],a:1,e:"WITH TIES = 동점 포함 (ORDER BY 필수)."},
+{t:"b15",s:"<code>ORDER BY SAL DESC OFFSET 5 ROWS FETCH NEXT 3 ROWS ONLY</code>의 결과는?",o:["1~3번째 행","5~7번째 행","6~8번째 행","6~10번째 행"],a:2,e:"5개 건너뛰고 3개 → 6, 7, 8번째."},
+{t:"b16",s:"PIVOT 절의 작성 순서로 옳은 것은?",o:["집계함수 FOR 컬럼 IN (값 목록)","FOR 컬럼 집계함수 IN (값 목록)","IN (값 목록) FOR 컬럼 집계함수","GROUP BY 컬럼 IN (값 목록)"],a:0,e:"SUM(SAL) FOR JOB IN (...)."},
+{t:"b16",s:"UNPIVOT에 대한 설명으로 틀린 것은?",o:["열 데이터를 행으로 바꾼다","집계 함수를 반드시 사용해야 한다","기본적으로 NULL 값은 제외된다","INCLUDE NULLS로 NULL을 포함할 수 있다"],a:1,e:"집계 함수는 PIVOT에서만."},
+{t:"b17",s:"정규 표현식 <code>'^A'</code>의 의미는?",o:["A로 시작","A로 끝남","A를 제외","A를 포함"],a:0,e:"[ ] 밖의 ^ = 시작."},
+{t:"b17",s:"정규 표현식 <code>'[^0-9]'</code>의 의미는?",o:["숫자로 시작","숫자가 아닌 문자 하나","숫자 하나","0~9 반복"],a:1,e:"[ ] 안의 ^ = 부정."},
+{t:"b17",s:"<code>REGEXP_SUBSTR('abc123def', '[0-9]+')</code>의 결과는?",o:["'1'","'abc'","'123'","'def'"],a:2,e:"+ = 1회 이상 → 연속된 숫자 123."},
+{t:"b17",s:"정규 표현식 <code>a{2,3}</code>의 의미는?",o:["a가 2회 이상 3회 이하","a가 정확히 23회","a 또는 2 또는 3","a 2개 뒤 문자 3개"],a:0,e:"{m,n} = m회 이상 n회 이하."},
+{t:"b18",s:"다음 중 DDL에 해당하는 것은?",o:["INSERT","GRANT","TRUNCATE","COMMIT"],a:2,e:"TRUNCATE는 DDL."},
+{t:"b18",s:"<code>INSERT A; SAVEPOINT S1; INSERT B; ROLLBACK TO S1; COMMIT;</code> 후 최종 반영된 것은?",o:["A, B","A","B","없음"],a:1,e:"S1 이후의 B만 취소."},
+{t:"b18",s:"Oracle에서 INSERT 후 COMMIT 없이 CREATE TABLE을 실행하고 ROLLBACK 하면?",o:["INSERT가 취소된다","CREATE TABLE만 취소된다","INSERT는 이미 커밋되어 남아 있다","오류가 발생한다"],a:2,e:"DDL의 묵시적 커밋으로 INSERT가 확정됨."},
+{t:"b18",s:"테이블 구조는 남기고 데이터 전체를 삭제하며, 롤백할 수 없는 명령어는?",o:["DELETE","DROP","TRUNCATE","ALTER"],a:2,e:"DELETE는 롤백 가능, DROP은 구조까지 삭제."},
+{t:"b18",s:"삭제 옵션 CASCADE와 RESTRICT에 대한 설명으로 옳은 것은?",o:["CASCADE는 연관된 것까지 연쇄 삭제, RESTRICT는 참조가 있으면 삭제를 막는다","CASCADE는 삭제를 막고, RESTRICT는 연쇄 삭제한다","둘 다 연쇄 삭제한다","둘 다 DCL 옵션이다"],a:0,e:"CASCADE = 연쇄, RESTRICT = 제한."},
+{t:"b18",s:"권한을 회수하는 명령어는?",o:["GRANT","REVOKE","ROLLBACK","DROP"],a:1,e:"GRANT 부여, REVOKE 회수."}
+];
+
+
+/* ===== 2과목 추가 주제 ===== */
+T2.push(
+{id:"b19",part:"자주 나오는 추가 주제",isNew:1,name:"GROUP BY · HAVING 계산",
+ c:"<p>GROUP BY는 컬럼 값이 같은 행끼리 묶어 <b>그룹당 1행</b>을 만든다. <b>NULL도 하나의 그룹</b>이 된다. HAVING은 만들어진 그룹에 거는 조건.</p>",
+ u:"<p>손으로 계산하는 순서<br>① WHERE로 행 거르기 → ② 그룹 묶기 → ③ 집계 → ④ HAVING으로 그룹 거르기</p>",
+ tip:"<p><span class='trap'>함정</span> GROUP BY 없이 조건에 맞는 행이 0건이면 결과는 <b>1행</b>: COUNT = 0, SUM = NULL.<br>GROUP BY가 있으면 결과 <b>0행</b>.</p><p>WHERE에는 집계 함수를 못 쓴다.</p>",
+ ex:"<pre>DEPTNO: 10, 10, 20, 20, NULL\n\nSELECT DEPTNO, COUNT(*) FROM EMP\nGROUP BY DEPTNO;\n→ 10 / 2,  20 / 2,  NULL / 1   (3행)\n\n... HAVING COUNT(*) &gt;= 2;\n→ 10 / 2,  20 / 2              (2행)</pre>"},
+{id:"b20",isNew:1,name:"ORDER BY · NULL 정렬",
+ c:"<p>기본은 ASC(오름차순). 컬럼명, SELECT 별칭, SELECT 순서 번호를 모두 쓸 수 있고, 여러 컬럼을 콤마로 나열한다.</p>",
+ u:"<p>가장 마지막에 실행된다. NULL 위치를 직접 정하려면 Oracle에서 <code>NULLS FIRST</code> / <code>NULLS LAST</code>.</p>",
+ tip:"<p><span class='trap'>함정</span> NULL 정렬 위치가 DB마다 반대.<br>· <b>Oracle</b>: NULL = 가장 큰 값 → ASC 맨 뒤, DESC 맨 앞<br>· <b>SQL Server</b>: NULL = 가장 작은 값 → ASC 맨 앞, DESC 맨 뒤</p>",
+ ex:"<pre>ORDER BY DEPTNO, SAL DESC   -- 부서 오름차순, 같으면 급여 내림차순\nORDER BY 2 DESC             -- SELECT의 2번째 컬럼\nORDER BY COMM NULLS FIRST   -- Oracle</pre>"},
+{id:"b21",isNew:1,name:"Oracle (+) 아우터 조인",
+ c:"<p>Oracle 전용 OUTER JOIN 표기. <b>(+)가 붙은 쪽</b>이 데이터가 없으면 NULL로 채워지는 쪽이고, <b>반대쪽이 기준</b>(전부 출력)이다.</p>",
+ u:"<p><code>A.X = B.X(+)</code> → A LEFT OUTER JOIN B<br><code>A.X(+) = B.X</code> → A RIGHT OUTER JOIN B</p>",
+ tip:"<p><span class='trap'>함정</span> 양쪽에 (+)를 붙일 수 없다 → <b>FULL OUTER는 (+)로 못 만든다</b>.</p><p>(+) 쪽 테이블의 다른 조건에도 (+)를 붙여야 아우터가 유지된다.</p>",
+ ex:"<pre>SELECT E.ENAME, D.DNAME\nFROM EMP E, DEPT D\nWHERE E.DEPTNO = D.DEPTNO(+);\n\n= FROM EMP E LEFT OUTER JOIN DEPT D\n  ON E.DEPTNO = D.DEPTNO</pre>"},
+{id:"b22",isNew:1,name:"제약조건 · PK · UNIQUE · FK",
+ c:"<ul><li><b>PK</b>: UNIQUE + NOT NULL, 테이블당 <b>1개</b> (복합 컬럼 가능)</li><li><b>UNIQUE</b>: 중복 불가, <b>NULL 허용</b>, 여러 개 가능</li><li><b>NOT NULL</b>: NULL 금지</li><li><b>CHECK</b>: 값 범위 제한</li><li><b>FK</b>: 부모의 PK/UNIQUE를 참조, NULL 허용</li></ul>",
+ u:"<p>FK 삭제 옵션<br>· <b>CASCADE</b>: 부모 삭제 시 자식도 삭제<br>· <b>SET NULL</b>: 자식 FK를 NULL로<br>· <b>RESTRICT / NO ACTION</b>: 자식이 있으면 삭제 막음</p>",
+ tip:"<p><span class='trap'>함정</span> \"UNIQUE는 NULL을 허용하지 않는다\" → 틀림.<br>\"PK는 테이블에 여러 개\" → 틀림 (여러 <b>컬럼</b>으로 하나의 PK는 가능).</p>",
+ ex:"<pre>CREATE TABLE EMP (\n  EMPNO  NUMBER       PRIMARY KEY,\n  EMAIL  VARCHAR2(50) UNIQUE,\n  ENAME  VARCHAR2(20) NOT NULL,\n  SAL    NUMBER       CHECK (SAL &gt;= 0),\n  DEPTNO NUMBER REFERENCES DEPT(DEPTNO)\n         ON DELETE CASCADE\n);</pre>"},
+{id:"b23",isNew:1,name:"뷰 (VIEW)",
+ c:"<p>실제 데이터 없이 <b>SELECT 문만 저장</b>해 둔 가상 테이블. 조회할 때마다 그 SELECT가 실행된다.</p>",
+ u:"<p>장점 세 가지<br>· <b>독립성</b>: 테이블 구조가 바뀌어도 응용 프로그램은 그대로<br>· <b>편리성</b>: 복잡한 쿼리를 단순하게<br>· <b>보안성</b>: 민감한 컬럼을 숨김</p>",
+ tip:"<p><span class='trap'>함정</span> \"뷰는 데이터를 저장한다\" → 틀림.<br>\"뷰를 쓰면 성능이 좋아진다\" → 보장 안 됨.</p><p>Oracle에서 뷰 정의를 바꿀 때는 <code>CREATE OR REPLACE VIEW</code>.</p>",
+ ex:"<pre>CREATE OR REPLACE VIEW V_EMP AS\nSELECT EMPNO, ENAME, DEPTNO   -- SAL은 숨김\nFROM EMP;\n\nSELECT * FROM V_EMP WHERE DEPTNO = 10;\nDROP VIEW V_EMP;</pre>"}
+);
+Q2.push(
+{t:"b19",s:"<code>GROUP BY DEPTNO</code>를 할 때 DEPTNO가 NULL인 행들은?",o:["결과에서 제외된다","하나의 그룹으로 묶인다","오류가 발생한다","행마다 별도 그룹이 된다"],a:1,e:"NULL도 하나의 그룹."},
+{t:"b19",s:"GROUP BY 없이, 조건에 맞는 행이 하나도 없을 때 <code>SELECT COUNT(*), SUM(SAL)</code>의 결과는?",o:["0, 0","NULL, NULL","0, NULL","결과 행 없음"],a:2,e:"1행이 나오고 COUNT는 0, SUM은 NULL."},
+{t:"b20",s:"Oracle에서 <code>ORDER BY COL ASC</code>로 정렬할 때 NULL의 위치는?",o:["맨 앞","맨 뒤","결과에서 제외","오류"],a:1,e:"Oracle은 NULL을 가장 큰 값으로 취급."},
+{t:"b20",s:"SQL Server에서 <code>ORDER BY COL ASC</code>로 정렬할 때 NULL의 위치는?",o:["맨 앞","맨 뒤","결과에서 제외","중간"],a:0,e:"SQL Server는 NULL을 가장 작은 값으로 취급."},
+{t:"b21",s:"<code>WHERE E.DEPTNO = D.DEPTNO(+)</code>와 같은 결과를 내는 것은?",o:["EMP E INNER JOIN DEPT D","EMP E RIGHT OUTER JOIN DEPT D","EMP E FULL OUTER JOIN DEPT D","EMP E LEFT OUTER JOIN DEPT D"],a:3,e:"(+)가 없는 쪽(EMP)이 기준."},
+{t:"b21",s:"Oracle (+) 표기에 대한 설명으로 틀린 것은?",o:["Oracle 전용 문법이다","데이터가 없으면 NULL로 채워질 쪽에 붙인다","양쪽에 모두 붙여 FULL OUTER JOIN을 만들 수 있다","(+)가 없는 쪽 테이블의 행은 모두 출력된다"],a:2,e:"양쪽 (+)는 불가. FULL OUTER는 ANSI 문법으로."},
+{t:"b22",s:"PK와 UNIQUE 제약조건에 대한 설명으로 옳은 것은?",o:["UNIQUE는 NULL을 허용한다","PK는 테이블에 여러 개 만들 수 있다","UNIQUE는 중복을 허용한다","PK는 NULL을 허용한다"],a:0,e:"PK = UNIQUE + NOT NULL, 테이블당 1개."},
+{t:"b22",s:"부모 행을 삭제하면 참조하는 자식 행도 함께 삭제되는 FK 옵션은?",o:["SET NULL","RESTRICT","CASCADE","NO ACTION"],a:2,e:"CASCADE = 연쇄 삭제."},
+{t:"b23",s:"뷰(VIEW)에 대한 설명으로 틀린 것은?",o:["실제 데이터를 별도로 저장한다","SELECT 문으로 정의된 가상 테이블이다","민감한 컬럼을 숨겨 보안에 도움이 된다","복잡한 쿼리를 단순하게 쓸 수 있다"],a:0,e:"뷰는 정의(SELECT 문)만 저장."},
+{t:"b23",s:"뷰의 장점으로 보기 어려운 것은?",o:["독립성","편리성","보안성","조회 성능이 항상 향상됨"],a:3,e:"독립성 · 편리성 · 보안성. 성능 향상은 보장되지 않습니다."}
+);
+
+/* ===== 2과목 실전형 ===== */
+const TBL=`<div class="tbl"><table class="data"><caption>EMP</caption><tr><th>EMPNO</th><th>ENAME</th><th>DEPTNO</th><th>SAL</th><th>COMM</th><th>MGR</th></tr>
+<tr><td>1</td><td>KIM</td><td>10</td><td>3000</td><td class="nl">NULL</td><td class="nl">NULL</td></tr>
+<tr><td>2</td><td>LEE</td><td>10</td><td>2000</td><td>500</td><td>1</td></tr>
+<tr><td>3</td><td>PARK</td><td>20</td><td>2000</td><td class="nl">NULL</td><td>1</td></tr>
+<tr><td>4</td><td>CHOI</td><td>20</td><td>1000</td><td>0</td><td>3</td></tr>
+<tr><td>5</td><td>JUNG</td><td class="nl">NULL</td><td>1500</td><td>300</td><td>3</td></tr></table></div>
+<div class="tbl"><table class="data"><caption>DEPT</caption><tr><th>DEPTNO</th><th>DNAME</th></tr><tr><td>10</td><td>영업</td></tr><tr><td>20</td><td>개발</td></tr><tr><td>30</td><td>인사</td></tr></table></div>`;
+const P2=[
+{t:"b7",s:"결과로 옳은 것은?",pre:"SELECT COUNT(*), COUNT(COMM), SUM(COMM), AVG(COMM)\nFROM EMP;",o:["5, 3, 800, 266.67","5, 5, 800, 160","5, 3, 800, 160","5, 2, 800, 400"],a:0,e:"COMM은 500, 0, 300 세 건만 계산. 0은 NULL이 아닙니다. AVG = 800 / 3."},
+{t:"b19",s:"결과 행 수는?",pre:"SELECT DEPTNO, SUM(SAL)\nFROM EMP\nGROUP BY DEPTNO;",o:["2","3","4","5"],a:1,e:"10, 20, NULL 세 그룹."},
+{t:"b19",s:"결과로 옳은 것은?",pre:"SELECT DEPTNO, SUM(SAL)\nFROM EMP\nWHERE SAL &gt;= 2000\nGROUP BY DEPTNO\nHAVING SUM(SAL) &gt; 2000;",o:["10 / 5000","10 / 5000, 20 / 2000","10 / 5000, 20 / 3000","20 / 3000"],a:0,e:"WHERE 후 KIM, LEE(10), PARK(20) → 10: 5000, 20: 2000 → HAVING으로 20 탈락."},
+{t:"b7",s:"결과로 옳은 것은?",pre:"SELECT COUNT(DISTINCT DEPTNO)\nFROM EMP;",o:["2","3","4","5"],a:0,e:"NULL은 세지 않습니다 → 10, 20."},
+{t:"b7",s:"결과 행 수는?",pre:"SELECT * FROM EMP\nWHERE ENAME LIKE '_I%'\n   OR SAL BETWEEN 1000 AND 1500\n  AND DEPTNO = 20;",o:["1","2","3","4"],a:1,e:"AND 먼저: (SAL 1000~1500 AND 부서 20) = CHOI. 여기에 LIKE '_I%' = KIM을 OR → 2행."},
+{t:"b3",s:"결과로 옳은 것은?",pre:"SELECT SUM(SAL + COMM), SUM(SAL) + SUM(COMM)\nFROM EMP;",o:["10300, 10300","NULL, 10300","5300, 10300","5300, 5300"],a:2,e:"SAL + COMM은 COMM이 NULL인 행에서 NULL → 2500 + 1000 + 1800 = 5300. 따로 더하면 9500 + 800."},
+{t:"b3",s:"KIM과 CHOI의 결과 값은?",pre:"SELECT ENAME, COALESCE(COMM, SAL * 0.1, 0)\nFROM EMP;",o:["300, 100","300, 0","0, 0","NULL, 0"],a:1,e:"KIM은 COMM이 NULL → 3000 × 0.1. CHOI의 COMM 0은 NULL이 아니라서 그대로 0."},
+{t:"b5",s:"결과로 옳은 것은?",pre:"SELECT CASE WHEN SAL &gt;= 2000 THEN 'H' ELSE 'L' END G,\n       COUNT(*)\nFROM EMP\nGROUP BY CASE WHEN SAL &gt;= 2000 THEN 'H' ELSE 'L' END;",o:["H 2, L 3","H 3, L 2","H 1, L 4","H 4, L 1"],a:1,e:"2000 이상: KIM, LEE, PARK."},
+{t:"b8",s:"결과로 옳은 것은?",pre:"SELECT COUNT(*)\nFROM EMP E JOIN DEPT D\n  ON E.DEPTNO = D.DEPTNO;",o:["3","4","5","6"],a:1,e:"DEPTNO가 NULL인 JUNG은 매칭되지 않습니다."},
+{t:"b8",s:"결과로 옳은 것은?",pre:"SELECT D.DNAME\nFROM DEPT D LEFT JOIN EMP E\n  ON D.DEPTNO = E.DEPTNO\nWHERE E.EMPNO IS NULL;",o:["영업","개발","인사","결과 없음"],a:2,e:"사원이 없는 부서만 남기는 패턴."},
+{t:"b8",s:"결과 행 수는?",pre:"SELECT *\nFROM EMP E FULL OUTER JOIN DEPT D\n  ON E.DEPTNO = D.DEPTNO;",o:["4","5","6","7"],a:2,e:"매칭 4 + JUNG + 인사 = 6."},
+{t:"b8",s:"결과 행 수는?",pre:"SELECT E.ENAME, M.ENAME\nFROM EMP E JOIN EMP M\n  ON E.MGR = M.EMPNO;",o:["3","4","5","25"],a:1,e:"MGR이 NULL인 KIM만 빠집니다."},
+{t:"b21",s:"Oracle에서 결과 행 수는?",pre:"SELECT E.ENAME, D.DNAME\nFROM EMP E, DEPT D\nWHERE E.DEPTNO = D.DEPTNO(+);",o:["4","5","6","15"],a:1,e:"EMP 기준 LEFT OUTER → 사원 5명 전부."},
+{t:"b12",s:"결과로 옳은 것은?",pre:"SELECT COUNT(*) FROM EMP\nWHERE DEPTNO NOT IN (SELECT DEPTNO FROM EMP\n                     WHERE EMPNO IN (1, 5));",o:["0","2","3","5"],a:0,e:"서브쿼리 결과가 10, NULL → NOT IN에 NULL이 있으면 0건."},
+{t:"b12",s:"결과로 옳은 것은?",pre:"SELECT ENAME FROM EMP E\nWHERE SAL &gt; (SELECT AVG(SAL) FROM EMP\n             WHERE DEPTNO = E.DEPTNO);",o:["KIM","KIM, PARK","KIM, PARK, JUNG","KIM, LEE, PARK"],a:1,e:"10번 평균 2500 → KIM. 20번 평균 1500 → PARK. JUNG은 DEPTNO = NULL 비교라 탈락."},
+{t:"b12",s:"결과로 옳은 것은?",pre:"SELECT DNAME FROM DEPT D\nWHERE EXISTS (SELECT 1 FROM EMP E\n              WHERE E.DEPTNO = D.DEPTNO\n                AND E.SAL &gt;= 2000);",o:["영업","영업, 개발","영업, 개발, 인사","개발"],a:1,e:"영업에 KIM·LEE, 개발에 PARK(2000)."},
+{t:"b13",s:"결과 행 수는?",pre:"SELECT DEPTNO FROM EMP\nUNION\nSELECT DEPTNO FROM DEPT;",o:["3","4","5","8"],a:1,e:"10, 20, 30, NULL. 집합 연산에서 NULL끼리는 중복으로 봅니다."},
+{t:"b13",s:"결과로 옳은 것은?",pre:"SELECT DEPTNO FROM DEPT\nMINUS\nSELECT DEPTNO FROM EMP;",o:["30","30, NULL","NULL","결과 없음"],a:0,e:"DEPT에만 있는 것 = 30."},
+{t:"b11",s:"JUNG의 RK 값은?",pre:"SELECT ENAME,\n       RANK() OVER (ORDER BY SAL DESC) RK\nFROM EMP;",o:["3","4","5","2"],a:1,e:"3000(1), 2000(2), 2000(2), 1500(4), 1000(5)."},
+{t:"b9",s:"LEE의 결과 값은?",pre:"SELECT ENAME,\n       SUM(SAL) OVER (PARTITION BY DEPTNO)\nFROM EMP;",o:["2000","5000","9500","3000"],a:1,e:"10번 부서 합계가 부서의 모든 행 옆에 붙습니다."},
+{t:"b9",s:"LEE의 결과 값은?",pre:"SELECT ENAME,\n       SUM(SAL) OVER (ORDER BY SAL)\nFROM EMP;",o:["4500","2000","6500","9500"],a:2,e:"윈도잉 절 생략 시 기본은 RANGE → 같은 값 2000(LEE, PARK)을 함께 포함. 1000 + 1500 + 2000 + 2000."},
+{t:"b11",s:"결과 행 수는?",pre:"SELECT * FROM (\n  SELECT ENAME, ROW_NUMBER() OVER\n         (PARTITION BY DEPTNO ORDER BY SAL DESC) RN\n  FROM EMP)\nWHERE RN = 1;",o:["1","2","3","5"],a:2,e:"부서별 1등: KIM(10), PARK(20), JUNG(NULL도 한 파티션)."},
+{t:"b10",s:"결과 행 수는?",pre:"SELECT DEPTNO, COUNT(*)\nFROM EMP\nWHERE DEPTNO IS NOT NULL\nGROUP BY ROLLUP(DEPTNO);",o:["2","3","4","5"],a:1,e:"10, 20, 그리고 총계 행."},
+{t:"b14",s:"CHOI의 LEVEL 값은?",pre:"SELECT ENAME, LEVEL FROM EMP\nSTART WITH MGR IS NULL\nCONNECT BY PRIOR EMPNO = MGR;",o:["1","2","3","4"],a:2,e:"KIM(1) → PARK(2) → CHOI(3)."},
+{t:"b14",s:"결과 행 수는?",pre:"SELECT ENAME FROM EMP\nSTART WITH EMPNO = 4\nCONNECT BY PRIOR MGR = EMPNO;",o:["1","2","3","5"],a:2,e:"역방향: CHOI → PARK → KIM."},
+{t:"b15",s:"Oracle에서 이 SQL에 대한 설명으로 옳은 것은?",pre:"SELECT ENAME, SAL FROM EMP\nWHERE ROWNUM &lt;= 2\nORDER BY SAL DESC;",o:["급여 상위 2명이 조회된다","먼저 2건을 뽑은 뒤 그 2건을 정렬한다","오류가 발생한다","0건이 조회된다"],a:1,e:"ROWNUM이 ORDER BY보다 먼저 적용됩니다."},
+{t:"b20",s:"Oracle에서 가장 마지막에 출력되는 사원은?",pre:"SELECT ENAME FROM EMP\nORDER BY COMM DESC;",o:["KIM","LEE","JUNG","CHOI"],a:3,e:"Oracle DESC는 NULL이 맨 앞 → NULL, NULL, 500, 300, 0."},
+{t:"b18",s:"T 테이블에 3건이 있다. 실행 후 T의 건수는?",pre:"INSERT INTO T VALUES (4);\nSAVEPOINT A;\nDELETE FROM T;\nROLLBACK TO A;\nINSERT INTO T VALUES (5);\nCOMMIT;",o:["0","3","4","5"],a:3,e:"DELETE만 취소 → 4건, 다시 1건 추가 → 5건."}
+];
+
+/* ===== 그림 ===== */
+const ALLT=[...T1,...T2];
+const P=(id,o)=>Object.assign(ALLT.find(t=>t.id===id),o);
+let vid=0;
+function venn(mode,label,sub){
+  const id="vn"+(vid++), L='<circle cx="36" cy="30" r="24"', R='<circle cx="64" cy="30" r="24"';
+  let f="";
+  if(mode==="inner")f=`<clipPath id="${id}">${L}/></clipPath>${R} class="von" clip-path="url(#${id})"/>`;
+  if(mode==="left")f=`${L} class="von"/>`;
+  if(mode==="right")f=`${R} class="von"/>`;
+  if(mode==="full")f=`${L} class="von"/>${R} class="von"/>`;
+  if(mode==="minus")f=`${L} class="von"/>${R} class="vbg"/>`;
+  return `<figure><svg viewBox="0 0 100 60" role="img" aria-label="${label}">${f}${L} class="vln"/>${R} class="vln"/></svg><figcaption><b>${label}</b>${sub?`<span>${sub}</span>`:""}</figcaption></figure>`;
+}
+const ruler=(cells,cap)=>`<div class="ruler">${cells.map(c=>`<div class="${c[2]||""}"><b>${c[0]}</b><i>${c[1]}</i></div>`).join("")}</div><p class="vcap">${cap}</p>`;
+const quad=items=>`<div class="quad">${items.map(i=>`<div><b>${i[0]}</b><strong>${i[1]}</strong><span>${i[2]}</span></div>`).join("")}</div>`;
+const flow=items=>`<div class="flow">${items.map(i=>`<div><b>${i[0]}</b><span>${i[1]}</span></div>`).join("<i>→</i>")}</div>`;
+
+/* 1과목 */
+P("t1",{viz:`<ol class="ladder">
+<li><b>도</b><div><strong>1NF</strong> 도메인 원자값<span>한 칸에 값 하나</span></div></li>
+<li><b>부</b><div><strong>2NF</strong> 부분 함수 종속 제거<span>복합키 일부에만 종속된 속성 분리</span></div></li>
+<li><b>이</b><div><strong>3NF</strong> 이행 함수 종속 제거<span>일반 속성끼리의 종속 분리</span></div></li>
+<li><b>결</b><div><strong>BCNF</strong> 결정자 문제 제거<span>모든 결정자가 후보키가 되도록</span></div></li>
+<li><b>다</b><div><strong>4NF</strong> 다치 종속 제거</div></li>
+<li><b>조</b><div><strong>5NF</strong> 조인 종속 제거</div></li></ol>`});
+P("t2",{viz:`<figure><svg class="dg" viewBox="0 0 320 96" role="img" aria-label="고객과 주문의 1대N 관계를 IE 표기법으로 그린 그림">
+<rect x="8" y="22" width="84" height="40" rx="6" class="bx"/><text x="50" y="47" text-anchor="middle" class="tx b">고객</text>
+<rect x="228" y="22" width="84" height="40" rx="6" class="bx"/><text x="270" y="47" text-anchor="middle" class="tx b">주문</text>
+<line x1="92" y1="42" x2="228" y2="42" class="ln"/>
+<line x1="102" y1="33" x2="102" y2="51" class="ln"/><line x1="110" y1="33" x2="110" y2="51" class="ln"/>
+<circle cx="200" cy="42" r="6" class="bx"/>
+<line x1="212" y1="42" x2="228" y2="32" class="ln"/><line x1="212" y1="42" x2="228" y2="52" class="ln"/>
+<text x="106" y="82" text-anchor="middle" class="tx">| 필수 · 1</text>
+<text x="208" y="82" text-anchor="middle" class="tx">○ 선택 · 까마귀발 N</text></svg>
+<figcaption>주문은 고객을 <b>반드시 1명</b> 가진다. 고객은 주문을 <b>0개 이상</b> 가진다.</figcaption></figure>`});
+P("t4",{viz:`<div class="erd"><div class="ent"><b>주문</b><i>PK 주문번호</i></div><div class="rel"><span>식별 · 실선</span></div><div class="ent"><b>주문상품</b><i class="k">PK 주문번호 (FK)</i><i>PK 순번</i></div></div>
+<div class="erd"><div class="ent"><b>부서</b><i>PK 부서코드</i></div><div class="rel dash"><span>비식별 · 점선</span></div><div class="ent"><b>사원</b><i>PK 사번</i><i class="k">부서코드 (FK)</i></div></div>
+<p class="vcap">부모 PK가 자식의 <b>PK 칸</b>에 들어가면 식별, <b>일반 속성 칸</b>에 들어가면 비식별.</p>`,ex:null});
+P("t5",{viz:quad([["유","유일성","인스턴스를 유일하게 구분"],["최","최소성","필요한 최소 속성만"],["불","불변성","값이 자주 안 바뀜"],["존","존재성","NOT NULL"]])});
+P("t9",{viz:`<div class="stack"><div class="lay">외부 스키마<span>개별 사용자 관점</span></div><div class="btw">↕ 논리적 독립성</div><div class="lay">개념 스키마<span>통합 관점 · 전체 DB</span></div><div class="btw">↕ 물리적 독립성</div><div class="lay">내부 스키마<span>물리적 저장 구조</span></div></div>`});
+P("t10",{viz:`<div class="tbl"><table class="data anno"><caption>사원 = 엔터티(표)</caption><tr><th>사번</th><th class="hc">이름</th><th>부서</th></tr><tr><td>1001</td><td class="hc">홍길동</td><td>영업</td></tr><tr class="hr"><td>1002</td><td class="hc hx">김영희</td><td>개발</td></tr><tr><td>1003</td><td class="hc">이철수</td><td>인사</td></tr></table></div>
+<div class="legend"><span class="lc">열 = 속성</span><span class="lr">행 = 인스턴스</span><span class="lx">칸 = 속성값</span></div>`,ex:null});
+P("t11",{viz:flow([["개념","핵심 엔터티·관계"],["논리","키·속성·정규화"],["물리","테이블·인덱스"]])});
+P("t12",{viz:flow([["① 대상 조사","느린 조회 찾기"],["② 다른 방법","뷰·클러스터링·인덱스"],["③ 반정규화","중복 허용"]])});
+P("t13",{viz:`<div class="sst"><div><em>One to One</em><span>고객</span><span>개인</span><span>법인</span></div><div><em>Plus</em><span>고객 + 개인</span><span>고객 + 법인</span></div><div><em>Single</em><span>고객 (개인·법인 전부)</span></div></div><p class="vcap">상자 하나가 테이블 하나. 아래로 갈수록 합쳐진다.</p>`});
+P("t15",{viz:quad([["A","원자성","전부 아니면 전무"],["C","일관성","전후 상태가 일관"],["I","고립성","중간에 끼어들기 금지"],["D","지속성","커밋 결과는 영구"]])});
+
+/* 2과목 */
+P("b1",{viz:ruler([["D",1],["A",2],["T",3,"on"],["A",4,"on"],["B",5,"on"],["A",6,"on"],["S",7],["E",8]],"<code>SUBSTR('DATABASE', 3, 4)</code> → 3번째부터 4글자 = <b>TABA</b>")});
+P("b2",{viz:ruler([["1",-3],["2",-2],["3",-1,"on"],["4",0],[".",""],["5",1,"on"],["6",2],["7",3]],"<code>ROUND(1234.567, n)</code>: 아래 숫자 n이 가리키는 자리까지 남긴다.<br>n = -1 → <b>1230</b>, n = 1 → <b>1234.6</b>")});
+P("b4",{viz:`<div class="units"><div><b>1</b><span>1일</span></div><div><b>1/24</b><span>1시간</span></div><div><b>1/24/60</b><span>1분</span></div></div>`});
+P("b6",{viz:`<div class="exec"><div><code>SELECT</code><b>5</b></div><div><code>FROM</code><b>1</b></div><div><code>WHERE</code><b>2</b></div><div><code>GROUP BY</code><b>3</b></div><div><code>HAVING</code><b>4</b></div><div><code>ORDER BY</code><b>6</b></div></div><p class="vcap">위에서 아래가 <b>쓰는 순서</b>, 오른쪽 숫자가 <b>실행 순서</b>.</p>`});
+P("b8",{viz:`<div class="venns">${venn("inner","INNER","양쪽 다 맞는 것")}${venn("left","LEFT OUTER","왼쪽 전부")}${venn("right","RIGHT OUTER","오른쪽 전부")}${venn("full","FULL OUTER","양쪽 전부")}</div>`});
+P("b9",{viz:`<div class="frames"><div><em>ROWS</em><span class="on">1000</span><span class="on">1500</span><span class="on cur">2000 ← 현재 행</span><span>2000</span><span>3000</span></div><div><em>RANGE</em><span class="on">1000</span><span class="on">1500</span><span class="on cur">2000 ← 현재 행</span><span class="on">2000 (같은 값)</span><span>3000</span></div></div><p class="vcap">ORDER BY SAL, 범위는 처음 ~ 현재 행. <b>RANGE는 같은 값을 함께 포함</b>한다.</p>`});
+P("b10",{viz:`<div class="tbl"><table class="data mx"><tr><th>나오는 집계</th><th>ROLLUP(A,B)</th><th>CUBE(A,B)</th><th>GROUPING SETS(A,B)</th></tr><tr><td>A + B별</td><td class="y">●</td><td class="y">●</td><td>–</td></tr><tr><td>A별</td><td class="y">●</td><td class="y">●</td><td class="y">●</td></tr><tr><td>B별</td><td>–</td><td class="y">●</td><td class="y">●</td></tr><tr><td>총계</td><td class="y">●</td><td class="y">●</td><td>–</td></tr></table></div>`});
+P("b12",{viz:`<div class="exec tag"><div><code>SELECT (서브쿼리)</code><b>스칼라</b></div><div><code>FROM (서브쿼리)</code><b>인라인 뷰</b></div><div><code>WHERE 컬럼 = (서브쿼리)</code><b>중첩</b></div></div>`});
+P("b13",{viz:`<div class="venns">${venn("full","UNION","합집합 · 중복 제거")}${venn("full","UNION ALL","합집합 · 중복 그대로")}${venn("inner","INTERSECT","교집합")}${venn("minus","MINUS","A에만 있는 것")}</div>`});
+P("b14",{viz:`<div class="tree"><div class="l1"><b>KING</b><i>LEVEL 1 · 루트</i></div><div class="l2"><b>JONES</b><i>LEVEL 2</i></div><div class="l3"><b>SCOTT</b><i>LEVEL 3 · 리프</i></div><div class="l2"><b>BLAKE</b><i>LEVEL 2 · 리프</i></div></div><p class="vcap">순방향 ↓ <code>PRIOR EMPNO = MGR</code><br>역방향 ↑ <code>PRIOR MGR = EMPNO</code></p>`});
+P("b15",{viz:ruler([1,2,3,4,5,6,7,8,9,10].map(n=>[n,n<=5?"×":n<=8?"✓":"",n<=5?"off":n<=8?"on":""]),"<code>OFFSET 5 ROWS FETCH NEXT 3 ROWS ONLY</code> → 5개 건너뛰고 <b>6~8번째</b>")});
+P("b16",{viz:`<div class="pv"><div class="tbl"><table class="data"><tr><th>DEPT</th><th>JOB</th><th>SAL</th></tr><tr><td>10</td><td>C</td><td>1300</td></tr><tr><td>10</td><td>M</td><td>2450</td></tr><tr><td>20</td><td>C</td><td>1900</td></tr><tr><td>20</td><td>M</td><td>2975</td></tr></table></div><div class="ar"><span>PIVOT →</span><span>← UNPIVOT</span></div><div class="tbl"><table class="data"><tr><th>DEPT</th><th>C</th><th>M</th></tr><tr><td>10</td><td>1300</td><td>2450</td></tr><tr><td>20</td><td>1900</td><td>2975</td></tr></table></div></div>`});
+P("b18",{viz:`<ol class="tl"><li><code>INSERT A</code></li><li class="sp"><code>SAVEPOINT S1</code><i>저장점</i></li><li class="x"><code>INSERT B</code><i>취소됨</i></li><li><code>ROLLBACK TO S1</code><i>S1 시점으로 되돌아감</i></li><li class="ok"><code>COMMIT</code><i>A만 확정</i></li></ol>`});
+P("b20",{viz:`${ruler([[1,""],[2,""],[3,""],["NULL","","on"],["NULL","","on"]],"<b>Oracle</b> ASC: NULL이 맨 뒤")}${ruler([["NULL","","on"],["NULL","","on"],[1,""],[2,""],[3,""]],"<b>SQL Server</b> ASC: NULL이 맨 앞")}`});
+P("b21",{viz:`<div class="erd"><div class="ent"><b>EMP E</b><i>기준 · 전부 출력</i></div><div class="rel"><span>LEFT OUTER</span></div><div class="ent"><b>DEPT D (+)</b><i class="k">없으면 NULL</i></div></div>`});
+
+/* ===================== 앱 ===================== */
+const SUBJ={
+  s1:{no:"1과목",name:"데이터 모델링의 이해",n:"시험 10문항",T:T1,sets:["s1"]},
+  s2:{no:"2과목",name:"SQL 기본 및 활용",n:"시험 40문항",T:T2,sets:["s2","p2"]}
+};
+const SETS={
+  s1:{title:"1과목 문제",label:"문제",Q:Q1,T:T1},
+  s2:{title:"2과목 문제",label:"개념 확인 문제",Q:Q2,T:T2},
+  p2:{title:"2과목 실전형",label:"실전형 문제",Q:P2,T:T2,flat:1}
+};
+const MK=["①","②","③","④"], KEY="sqld-quiz-v4";
+let st={s1:{},s2:{},p2:{},read:{}}, filter="all", jump=null;
+try{const v=JSON.parse(localStorage.getItem(KEY));if(v)st=Object.assign(st,v);}catch(e){}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}};
+const $=id=>document.getElementById(id);
+const stat=k=>{const a=st[k],Q=SETS[k].Q,ks=Object.keys(a).filter(i=>Q[i]);return{done:ks.length,ok:ks.filter(i=>a[i]===Q[i].a).length,total:Q.length}};
+const tname=Object.fromEntries(ALLT.map(t=>[t.id,t.name]));
+const KW=/\b(SELECT|FROM|WHERE|GROUP|BY|HAVING|ORDER|SIBLINGS|JOIN|LEFT|RIGHT|FULL|OUTER|INNER|CROSS|NATURAL|ON|AND|OR|NOT|IN|IS|NULL|AS|CASE|WHEN|THEN|ELSE|END|OVER|PARTITION|ROWS|RANGE|BETWEEN|UNBOUNDED|PRECEDING|FOLLOWING|CURRENT|ROW|UNION|ALL|INTERSECT|MINUS|START|WITH|TIES|CONNECT|PRIOR|INSERT|INTO|VALUES|UPDATE|DELETE|COMMIT|ROLLBACK|SAVEPOINT|CREATE|REPLACE|VIEW|TABLE|ALTER|ADD|MODIFY|COLUMN|DROP|GRANT|REVOKE|PIVOT|FOR|OFFSET|FETCH|NEXT|ONLY|TOP|DESC|ASC|EXISTS|DISTINCT|TO|LIKE|ROLLUP|CUBE|PRIMARY|KEY|UNIQUE|CHECK|REFERENCES|CASCADE|NULLS|FIRST|LAST)\b/g;
+function hl(root){
+  root.querySelectorAll("pre").forEach(p=>{
+    if(p.dataset.hl)return;p.dataset.hl=1;
+    p.innerHTML=p.innerHTML.split("\n").map(l=>{const k=l.indexOf("--");const code=(k>=0?l.slice(0,k):l).replace(KW,'<span class="kw">$&</span>');return code+(k>=0?`<span class="cm">${l.slice(k)}</span>`:"");}).join("\n");
+  });
+}
+function card(k,i){
+  const S=SETS[k],q=S.Q[i],a=st[k][i],done=a!==undefined;
+  const el=document.createElement("article");el.className="q";
+  el.innerHTML=`<div class="meta"><span class="num">Q${i+1}</span>${S.flat?`<span class="tag">${tname[q.t]||""}</span>`:""}</div><p class="stem">${q.s}</p>${q.pre?`<pre>${q.pre}</pre>`:""}<div class="opts"></div>`;
+  const box=el.querySelector(".opts");
+  q.o.forEach((txt,j)=>{
+    const b=document.createElement("button");b.className="opt";b.type="button";
+    b.innerHTML=`<span class="mk">${MK[j]}</span><span>${txt}</span>`;
+    if(done){b.disabled=true;if(j===q.a)b.classList.add("right");else if(j===a)b.classList.add("wrong");}
+    b.onclick=()=>{st[k][i]=j;save();el.replaceWith(card(k,i));score(k);};
+    box.appendChild(b);
+  });
+  if(done){
+    const ex=document.createElement("div");ex.className="exp";
+    ex.innerHTML=(a===q.a?'<b class="o">정답</b> ':`<b class="x">오답</b> 정답은 ${MK[q.a]}. `)+q.e;
+    el.appendChild(ex);
+    const r=document.createElement("button");r.className="retry";r.type="button";r.textContent="다시 풀기";
+    r.onclick=()=>{delete st[k][i];save();el.replaceWith(card(k,i));score(k);};
+    el.appendChild(r);
+  }
+  hl(el);return el;
+}
+function score(k){
+  const s=stat(k);
+  $("score").innerHTML=`정답 <b>${s.ok}</b> / 푼 ${s.done} / ${s.total}`;
+  $("prog").style.width=(s.done/s.total*100)+"%";
+}
+function head(title,mode,k){
+  $("ttl").textContent=title;$("back").hidden=mode==="home";$("score").innerHTML="";
+  $("barw").hidden=mode!=="quiz";$("filt").hidden=mode!=="quiz";$("toc").hidden=mode!=="notes";
+  $("fab").hidden=!(mode==="quiz"&&k==="p2");$("sheet").hidden=true;$("fab").textContent="EMP · DEPT 표 보기";
+  if(mode==="quiz")score(k);
+}
+function home(){
+  head("SQLD 정리","home");
+  const v=$("view");
+  v.innerHTML=`<div class="hero"><h2>이틀이면 <em>충분해요.</em></h2><p>개념을 훑고, 문제로 확인하고, 틀린 것만 다시. 기록은 이 기기에 저장됩니다.</p></div>
+  <div class="exam"><div><b>50</b><span>문항 4지선다</span></div><div><b>90</b><span>분</span></div><div><b>60</b><span>점 이상 합격</span></div><div><b>40%</b><span>미만 과락</span></div></div>
+  <p class="goal">합격선은 <b>50문제 중 30개</b>. 1과목 7~8개, 2과목 23개 정도가 현실적인 목표예요.</p>`;
+  for(const sid in SUBJ){
+    const s=SUBJ[sid],rd=s.T.filter(t=>st.read[t.id]).length;
+    const d=document.createElement("section");d.className="subj";
+    let h=`<h3>${s.no} ${s.name}<small>${s.n}</small></h3><div class="go">
+      <a href="#${sid}-notes"><b>개념</b><span>${rd} / ${s.T.length} 주제 완료</span><div class="mini"><i style="width:${rd/s.T.length*100}%"></i></div></a>`;
+    s.sets.forEach((k,n)=>{const x=stat(k);h+=`<a class="${n===0?"pri":""}" href="#${k}-quiz"><b>${SETS[k].label}</b><span>${x.done?`정답 ${x.ok} · 푼 ${x.done} / ${x.total}`:`${x.total}문항`}</span><div class="mini"><i style="width:${x.done/x.total*100}%"></i></div></a>`;});
+    d.innerHTML=h+"</div>";v.appendChild(d);
+  }
+}
+function notes(sid){
+  const s=SUBJ[sid],Q=SETS[sid].Q;head(`${s.no} 개념`,"notes");
+  const v=$("view");v.innerHTML="";const toc=$("toc");toc.innerHTML="";
+  s.T.forEach((t,k)=>{
+    if(t.part){const p=document.createElement("p");p.className="part";p.textContent=t.part;v.appendChild(p);}
+    const n=Q.filter(q=>q.t===t.id).length;
+    const sec=document.createElement("section");sec.className="topic";sec.id=t.id;
+    sec.innerHTML=`<header><span class="no">${String(k+1).padStart(2,"0")}</span><h2>${t.name}</h2>${t.pct?`<span class="badge">출제 ${t.pct}</span>`:t.isNew?'<span class="badge new">추가</span>':""}</header>
+      <div class="blk c"><span class="lbl">개념</span>${t.c}</div>
+      ${t.viz?`<div class="viz">${t.viz}</div>`:""}
+      <div class="blk u"><span class="lbl">사용법</span>${t.u}</div>
+      <div class="blk t"><span class="lbl">꿀팁</span>${t.tip}</div>
+      ${t.ex?`<div class="blk e"><span class="lbl">예시</span>${t.ex}</div>`:""}
+      <div class="tfoot">${n?`<button type="button" class="toq">이 주제 문제 ${n}개 →</button>`:""}<button type="button" class="chk" aria-pressed="${!!st.read[t.id]}"></button></div>`;
+    const tb=document.createElement("button");tb.type="button";tb.textContent=t.name.split(/[ ·/]/)[0];
+    tb.onclick=()=>sec.scrollIntoView({behavior:matchMedia("(prefers-reduced-motion:reduce)").matches?"auto":"smooth"});
+    toc.appendChild(tb);
+    const chk=sec.querySelector(".chk");
+    const paint=()=>{const on=!!st.read[t.id];chk.setAttribute("aria-pressed",on);chk.textContent=on?"✓ 완료함":"다 봤어요";tb.classList.toggle("done",on);};
+    chk.onclick=()=>{if(st.read[t.id])delete st.read[t.id];else st.read[t.id]=1;save();paint();};paint();
+    const tq=sec.querySelector(".toq");if(tq)tq.onclick=()=>{jump=t.id;location.hash=`${sid}-quiz`;};
+    v.appendChild(sec);
+  });
+  const a=document.createElement("a");a.className="next";a.href=`#${sid}-quiz`;a.textContent=`${s.no} 문제 풀러 가기 →`;v.appendChild(a);
+  hl(v);
+}
+function quiz(k){
+  const S=SETS[k];head(S.title,"quiz",k);
+  const v=$("view");v.innerHTML="";let shown=0;
+  const pass=i=>{const a=st[k][i];return filter==="todo"?a===undefined:filter==="wrong"?a!==undefined&&a!==S.Q[i].a:true;};
+  if(S.flat){
+    const g=document.createElement("div");g.className="given";g.innerHTML=`<p>모든 문제는 아래 두 테이블을 사용합니다. 오른쪽 아래 버튼으로 언제든 다시 볼 수 있어요.</p>${TBL}`;v.appendChild(g);
+    S.Q.forEach((q,i)=>{if(pass(i)){v.appendChild(card(k,i));shown++;}});
+  }else S.T.forEach(t=>{
+    const ids=S.Q.map((q,i)=>i).filter(i=>S.Q[i].t===t.id&&pass(i));
+    if(!ids.length)return;
+    const h=document.createElement("p");h.className="grp";h.id="g-"+t.id;h.textContent=t.name;v.appendChild(h);
+    ids.forEach(i=>{v.appendChild(card(k,i));shown++;});
+  });
+  if(!shown){const p=document.createElement("p");p.className="empty";p.textContent=filter==="wrong"?"틀린 문제가 없습니다.":"모든 문제를 풀었습니다.";v.appendChild(p);}
+  const rs=document.createElement("button");rs.className="reset";rs.type="button";rs.textContent="이 문제집 풀이 기록 초기화";
+  rs.onclick=()=>{if(!rs.classList.contains("arm")){rs.classList.add("arm");rs.textContent="한 번 더 누르면 초기화";return;}st[k]={};save();quiz(k);window.scrollTo(0,0);};
+  v.appendChild(rs);
+}
+function setFilter(f){filter=f;document.querySelectorAll("#filt button").forEach(x=>x.setAttribute("aria-pressed",x.dataset.f===f));}
+function route(){
+  const n=location.hash.match(/^#(s1|s2)-notes$/),q=location.hash.match(/^#(s1|s2|p2)-quiz$/);
+  if(n)notes(n[1]);else if(q){if(jump)setFilter("all");quiz(q[1]);}else home();
+  const t=jump&&$("g-"+jump);jump=null;
+  if(t)t.scrollIntoView();else window.scrollTo(0,0);
+}
+$("back").onclick=()=>{location.hash="";};
+$("fab").onclick=()=>{const s=$("sheet");if(s.hidden){s.innerHTML=TBL;s.hidden=false;$("fab").textContent="표 닫기";}else{s.hidden=true;$("fab").textContent="EMP · DEPT 표 보기";}};
+document.querySelectorAll("#filt button").forEach(b=>b.onclick=()=>{
+  setFilter(b.dataset.f);const m=location.hash.match(/^#(s1|s2|p2)-quiz$/);if(m){quiz(m[1]);window.scrollTo(0,0);}
+});
+window.addEventListener("hashchange",route);
+route();
+</script>
+</body>
+</html>
